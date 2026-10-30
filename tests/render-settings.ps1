@@ -1,4 +1,4 @@
-$ErrorActionPreference='Stop'
+﻿$ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.Windows.Forms,System.Drawing
 [Windows.Forms.Application]::EnableVisualStyles()
 $root=Split-Path $PSScriptRoot -Parent
@@ -14,6 +14,8 @@ function Render($window,$name) {
 try {
     [void]$theme.Invoke($null,[object[]]@($form,$false)); Render $form 'main-light.png'
     [void]$theme.Invoke($null,[object[]]@($form,$true)); Render $form 'main-dark.png'
+    $login=[Activator]::CreateInstance($assembly.GetType('Hemograma.LoginForm'),[object[]]@('Data Source=localhost;Initial Catalog=eDelphyn;Integrated Security=True'))
+    try { Render $login 'login.png' } finally { $login.Dispose() }
     $settings=[Activator]::CreateInstance($assembly.GetType('Hemograma.SettingsForm'),[object[]]@($true,[Drawing.Icon]$form.Icon))
     try { Render $settings 'settings-dark.png' } finally { $settings.Dispose() }
     $about=[Activator]::CreateInstance($assembly.GetType('Hemograma.AboutForm'),[object[]]@($false,[Drawing.Icon]$form.Icon))

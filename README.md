@@ -2,7 +2,7 @@
 
 Aplicación de escritorio Windows Forms en C# / .NET Framework 4.8. Ejecutable: `dist/eDelphyn.Hemograma.exe`.
 
-## Instalación y actualización · versión 1.4.3
+## Instalación y actualización · versión 1.5.0
 
 Descargue el instalador desde [GitHub Releases](https://github.com/floresroldanluis/MBeDelphynHemograma/releases/latest). Incluye .NET Framework 4.8 sin necesidad de descargarlo al instalar. Si falta este componente, solicita permisos de administrador y puede requerir reiniciar Windows. La aplicación se instala para el usuario actual en Windows 10/11.
 
@@ -47,7 +47,7 @@ Elimina registros completos, incluidos resultados existentes y validados; no vac
 
 ## Conexión
 
-La configuración de desarrollo `dist/eDelphyn.Hemograma.exe.config` usa `localhost`, base `eDelphyn` y autenticación integrada de Windows. No contiene contraseñas. Puede cambiar la cadena de conexión con la aplicación cerrada. La cuenta necesita SELECT sobre DONATION y DONATION_TEST, DELETE sobre DONATION_TEST y los permisos requeridos por el trigger existente.
+La configuración de desarrollo `dist/eDelphyn.Hemograma.exe.config` usa `localhost`, base `eDelphyn` y autenticación integrada de Windows. No contiene contraseñas. Puede cambiar la cadena de conexión con la aplicación cerrada. La cuenta técnica SQL necesita SELECT sobre DONATION, DONATION_TEST, USR, PWD y USERPROFILE; INSERT y DELETE sobre DONATION_TEST y los permisos requeridos por el trigger existente.
 
 ## Transacción y respaldo
 
@@ -55,7 +55,7 @@ Antes del DELETE se vuelven a leer todos los campos de las pruebas seleccionadas
 
 Los registros completos y los identificadores de las donaciones se guardan como XML con esquema en `%LOCALAPPDATA%\eDelphyn.Hemograma\Respaldos`. El archivo se sincroniza y se relee para comprobarlo antes del DELETE. Si falla el respaldo o la operación SQL, la transacción no se confirma. No se guarda una contraseña. Los respaldos contienen resultados de laboratorio y heredan los permisos de la carpeta del usuario Windows.
 
-Un XML refleja el estado **previo al intento**, y puede existir aunque el intento se haya cancelado. No es prueba de una eliminación confirmada. La restauración no es automática: un administrador debe revisar el XML y el estado actual antes de restaurar registros. No incluye una copia del valor anterior de DAT_MODIFIED. Si se interrumpe la conexión durante COMMIT, vuelva a consultar para determinar el resultado; no repita el borrado a ciegas.
+Un XML refleja el estado **previo al intento**, y puede existir aunque el intento se haya cancelado. No es prueba de una eliminación confirmada. Ver respaldos muestra una tabla de donación, fecha, prueba, resultado, validación y estado actual. Seleccione un respaldo, marque las pruebas ausentes y pulse Restaurar seleccionadas. Tras confirmar, recupera todos sus campos dentro de una transacción; no sobrescribe registros existentes. Rechaza otro servidor/base, donaciones que no coinciden y esquemas incompatibles. Si una prueba ya existe o falla cualquier inserción/verificación, se cancela todo. El XML original se conserva. Sin conexión se permite consultar el archivo, pero no restaurarlo. No incluye una copia del valor anterior de DAT_MODIFIED. Si se interrumpe la conexión durante COMMIT, vuelva a consultar para determinar el resultado; no repita el borrado a ciegas.
 
 ## Compilar y verificar
 
@@ -72,3 +72,13 @@ La firma local usa la huella pública configurada en Deployment.cs. La clave pri
 ## Instalador privado
 La variante -Privado precarga una contraseña oculta con asteriscos. Se genera con build-installer.ps1 -PrivateBuild y un archivo local installer/private-defaults.iss, excluido de Git. Nunca publique esa variante ni su archivo de configuración. La versión pública mantiene la contraseña vacía. Siguiente prueba la conexión y avanza directamente a Listo para instalar; ante un error permanece en la página SQL.
 
+
+## Inicio de sesión y soporte · 1.5.0
+
+Al abrir se solicita usuario y contraseña de eDelphyn mediante un formulario propio con botón Acceder. La conexión técnica SQL del instalador es independiente de esta cuenta. La validación consulta USR/PWD/USERPROFILE, exige cuenta activa y no bloqueada y respeta DAT_PASSWORD y NUM_EXPIRY. No crea cuentas ni altera contraseñas o contadores de intentos de eDelphyn. El formulario aplica una espera local tras fallos; no sustituye los controles del servidor.
+
+Compatibilidad comprobada mediante inspección del código instalado de eDelphyn: usuario en mayúsculas y SHA-1 hexadecimal en mayúsculas; codificación Windows-1252 como la JVM local. Esto conserva el formato heredado, no introduce un almacenamiento nuevo de contraseñas. Para una instalación con otra codificación, configure appSettings/eDelphynAuthEncoding en el archivo .config. La contraseña del usuario no se guarda ni registra. La autenticación se prueba con cuentas sintéticas en tablas temporales; el ingreso con una cuenta real debe validarse por su titular.
+
+El subtítulo es «Visualización y eliminación de pruebas de hemograma del eDelphyn». Las actualizaciones están únicamente en Configuración. Acerca de y el pie principal incluyen los datos de soporte proporcionados por Diagnóstico UAL; Acerca de se cierra con X o Escape.
+
+Las pruebas de restauración y autenticación escriben exclusivamente en tablas temporales. Los XML de prueba y las capturas locales no se publican. Los nuevos respaldos de eliminación incluyen la identidad eDelphyn autenticada.

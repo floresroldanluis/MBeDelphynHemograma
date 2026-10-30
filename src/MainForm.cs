@@ -71,18 +71,22 @@ namespace Hemograma
             CenterDate(picker);
         }
         static Button Button(string text, Color color) { return new AccentButton { Text = text, BackColor = color, ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Width = 125, Height = 37, Cursor = Cursors.Hand }; }
-        public MainForm(string connectionString)
+        public MainForm(string connectionString) : this(connectionString, null) { }
+        internal MainForm(string connectionString, LoginIdentity identity)
         {
             repository = new Repository(connectionString);
+            if (identity != null) { repository.OperatorId = identity.Id; repository.OperatorName = identity.Name; }
             databaseName = new SqlConnectionStringBuilder(connectionString).InitialCatalog;
             using (var iconStream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("Hemograma.App.ico"))
                 if (iconStream != null) using (var appIcon = new Icon(iconStream)) Icon = (Icon)appIcon.Clone();
-            Text = "eDelphyn · Gestión de hemograma"; Size = new Size(1260, 790); MinimumSize = new Size(1000, 670);
+            Text = "eDelphyn · Gestión de hemograma"; Size = new Size(1260, 850); MinimumSize = new Size(1000, 740);
             StartPosition = FormStartPosition.CenterScreen; Font = new Font("Segoe UI", 10); BackColor = Color.FromArgb(244, 247, 250);
-            var layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 6, Padding = new Padding(24, 12, 24, 24) };
+            var layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 7, Padding = new Padding(24, 12, 24, 12) };
             layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 76)); layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 143));
             layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40)); layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 144)); layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 35));
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 144)); layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 72));
+            layout.Controls.Add(ProductInfo.SupportLabel(), 0, 6);
             Controls.Add(layout);
             var tools = new FlowLayoutPanel { Dock = DockStyle.Right, Width = 166, WrapContents = false };
             var about = new HeaderButton("\uE946", "Acerca de");
@@ -105,13 +109,17 @@ namespace Hemograma
             var titleLabel = new Label { Text = "Resultados Inmunohematológicos de Donantes", AutoSize = false, Height = 42, TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 21, FontStyle.Bold), ForeColor = Color.FromArgb(27, 58, 86) };
             heading.Controls.Add(titleLabel);
             var cs = new SqlConnectionStringBuilder(connectionString);
-            heading.Controls.Add(new Label { Text = "Selección y eliminación de pruebas de hemograma del eDelphyn", AutoSize = false, Dock = DockStyle.Bottom, Height = 28, TextAlign = ContentAlignment.MiddleCenter });
+            heading.Controls.Add(new Label { Text = "Visualización y eliminación de pruebas de hemograma del eDelphyn", AutoSize = false, Dock = DockStyle.Bottom, Height = 28, TextAlign = ContentAlignment.MiddleCenter });
             heading.Controls.Add(headerTools);
             headerTools.BringToFront();
             heading.SizeChanged += (s, e) =>
             {
                 headerTools.Location = new Point(Math.Max(0, heading.ClientSize.Width - headerTools.Width), 0);
                 titleLabel.Bounds = new Rectangle(166, 0, Math.Max(0, heading.ClientSize.Width - 332), 42);
+                float size = 21;
+                using (var fullFont = new Font("Segoe UI", 21, FontStyle.Bold))
+                    size = Math.Min(21, Math.Max(12, 21f * titleLabel.Width / Math.Max(1, TextRenderer.MeasureText(titleLabel.Text, fullFont).Width)));
+                if (Math.Abs(titleLabel.Font.Size - size) > 0.2f) { var oldFont = titleLabel.Font; titleLabel.Font = new Font("Segoe UI", size, FontStyle.Bold); oldFont.Dispose(); }
             };
             layout.Controls.Add(heading, 0, 0); layout.Controls.Add(filters, 0, 1);
             var codeGroup = new GroupBox { Text = "Donación número", Bounds = new Rectangle(0, 0, 315, 115) };
@@ -174,11 +182,16 @@ namespace Hemograma
             bottom.Controls.Add(testSection, 0, 0); bottom.Controls.Add(actions, 0, 1);
             actions.Controls.Add(delete);
             var backupButton = new AccentButton { Text = "Ver respaldos", Width = 135, Height = 37, Margin = new Padding(20, 3, 3, 3) };
-            backupButton.Click += (s, e) => { Directory.CreateDirectory(backupRoot); System.Diagnostics.Process.Start("explorer.exe", "\"" + backupRoot + "\""); };
+            backupButton.Click += async (s, e) =>
+            {
+                if (busy) return;
+                using (var viewer = new BackupsForm(repository, backupRoot, darkTheme, Icon))
+                {
+                    viewer.ShowDimmed(this);
+                    if (viewer.Changed) { InvalidateSearch(s, e); await SearchAsync(); }
+                }
+            };
             actions.Controls.Add(backupButton); layout.Controls.Add(bottom, 0, 4);
-            var updateButton = new AccentButton { Text = "Actualizar programa", Width = 175, Height = 37, Margin = new Padding(20, 3, 3, 3) };
-            updateButton.Click += (s, e) => ShowSettings();
-            actions.Controls.Add(updateButton);
             status.Text = "Ingrese un rango y pulse Buscar. No se ha eliminado ninguna prueba."; layout.Controls.Add(status, 0, 5);
             delete.Enabled = false; delete.Click += async (s, e) => await DeleteAsync();
             fromCode.TextChanged += DonationCodeChanged; toCode.TextChanged += DonationCodeChanged;

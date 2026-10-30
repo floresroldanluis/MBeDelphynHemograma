@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -35,13 +35,15 @@ namespace Hemograma
         public int Count;
         public string Backup;
     }
-    internal sealed class Repository
+    internal sealed partial class Repository
     {
         public static readonly int[] TestIds = { 72, 73, 74, 75, 76, 77, 78, 92, 93 };
         public static readonly string[] TestNames = { "Rcto. PQ", "Rcto. Leu", "Neutrófilos", "Linfocitos", "Monocitos", "Eosinófilos", "Basófilos", "Hto", "Hb" };
         const string Allowed = "72,73,74,75,76,77,78,92,93";
         readonly string connectionString;
         readonly bool fixture;
+        internal decimal? OperatorId;
+        internal string OperatorName;
         string Donations { get { return fixture ? "#DONATION" : "dbo.DONATION"; } }
         string Tests { get { return fixture ? "#DONATION_TEST" : "dbo.DONATION_TEST"; } }
         public Repository(string connectionString) { this.connectionString = connectionString; }
@@ -144,6 +146,7 @@ namespace Hemograma
                 backup.ExtendedProperties["Servidor"] = c.DataSource;
                 backup.ExtendedProperties["Base"] = c.Database;
                 backup.ExtendedProperties["UsuarioWindows"] = Environment.UserDomainName + "\\" + Environment.UserName;
+                if (OperatorId.HasValue) { backup.ExtendedProperties["UsuarioeDelphynID"] = OperatorId.Value.ToString(CultureInfo.InvariantCulture); backup.ExtendedProperties["UsuarioeDelphyn"] = OperatorName; }
                 backup.ExtendedProperties["FechaUTC"] = DateTime.UtcNow.ToString("O");
                 backup.ExtendedProperties["Nota"] = "Copia previa al intento. Su existencia no demuestra que se confirmara la transacción.";
                 backup.Tables.Add(current.Copy());

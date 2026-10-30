@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Configuration;
 using System.Windows.Forms;
 
@@ -15,7 +15,12 @@ namespace Hemograma
             try
             {
                 using (var mutex = new System.Threading.Mutex(false, "Local\\eDelphyn.Hemograma.Running"))
-                    Application.Run(new MainForm(Deployment.ConnectionString()));
+                    {
+                    string connection = Deployment.ConnectionString();
+                    using (var login = new LoginForm(connection))
+                        if (login.ShowDialog() == DialogResult.OK)
+                            Application.Run(new MainForm(connection, login.Identity));
+                }
             }
             catch (Exception ex) { MessageBox.Show(ex.Message, "eDelphyn", MessageBoxButtons.OK, MessageBoxIcon.Error); }
         }
