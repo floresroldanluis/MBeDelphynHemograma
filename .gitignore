@@ -10,3 +10,5 @@ tests/*.png
 tests/*.txt
 tests/*.xml
 tests/.*/
+
+installer/private-defaults.iss

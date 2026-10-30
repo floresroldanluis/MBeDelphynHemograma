@@ -2,7 +2,7 @@
 
 Aplicación de escritorio Windows Forms en C# / .NET Framework 4.8. Ejecutable: `dist/eDelphyn.Hemograma.exe`.
 
-## Instalación y actualización · versión 1.4.0
+## Instalación y actualización · versión 1.4.1
 
 Descargue el instalador desde [GitHub Releases](https://github.com/floresroldanluis/MBeDelphynHemograma/releases/latest). Incluye .NET Framework 4.8 sin necesidad de descargarlo al instalar. Si falta este componente, solicita permisos de administrador y puede requerir reiniciar Windows. La aplicación se instala para el usuario actual en Windows 10/11.
 
@@ -68,3 +68,7 @@ Ejecute `dist\eDelphyn.Hemograma.exe --self-test` y espere al proceso. El inform
 Las verificaciones en tests cubren filtros, ordenamiento, versiones y firma del instalador. La prueba SQL integrada utiliza tablas temporales para las operaciones de escritura. No se modifican donaciones reales durante las pruebas.
 
 La firma local usa la huella pública configurada en Deployment.cs. La clave privada permanece en el almacén de Windows. Para cambiar de editor debe planificarse la migración del verificador de actualizaciones. No hay sello de tiempo: renueve y vuelva a firmar antes de caducar el certificado.
+
+## Instalador privado
+La variante -Privado precarga una contraseña oculta con asteriscos. Se genera con build-installer.ps1 -PrivateBuild y un archivo local installer/private-defaults.iss, excluido de Git. Nunca publique esa variante ni su archivo de configuración. La versión pública mantiene la contraseña vacía. Siguiente prueba la conexión y avanza directamente a Listo para instalar; ante un error permanece en la página SQL.
+

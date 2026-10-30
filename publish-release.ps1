@@ -1,4 +1,4 @@
-param([string]$Gh = 'gh')
+﻿param([string]$Gh = 'gh')
 $ErrorActionPreference = 'Stop'
 $repo = 'floresroldanluis/MBeDelphynHemograma'
 Push-Location $PSScriptRoot
@@ -16,6 +16,6 @@ try {
     git push origin HEAD
     if ($LASTEXITCODE -ne 0) { throw 'Falló git push.' }
     $commit = git rev-parse HEAD
-    & $Gh release create "v$version" $setup "$PSScriptRoot\release\SHA256.txt" --repo $repo --target $commit --title "eDelphyn Hemograma $version" --generate-notes
+    & $Gh release create "v$version" $setup ($setup + '.sha256.txt') --repo $repo --target $commit --title "eDelphyn Hemograma $version" --generate-notes
     if ($LASTEXITCODE -ne 0) { throw 'Falló la publicación de la release.' }
 } finally { Pop-Location }

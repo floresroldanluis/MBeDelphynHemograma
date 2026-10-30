@@ -1,4 +1,11 @@
-#define AppVersion "1.4.0"
+﻿#define AppVersion "1.4.1"
+#ifdef PRIVATE_BUILD
+  #include "private-defaults.iss"
+  #define SetupSuffix "-Privado"
+#else
+  #define DefaultSqlPassword ""
+  #define SetupSuffix ""
+#endif
 [Setup]
 AppId={{CBED70EC-F181-469B-B350-4477CA2D7698}
 AppName=eDelphyn Hemograma
@@ -17,7 +24,7 @@ WizardImageFile=..\assets\wizard.bmp
 WizardSmallImageFile=..\assets\wizard-small.bmp
 UninstallDisplayIcon={app}\eDelphyn.Hemograma.exe
 OutputDir=..\release
-OutputBaseFilename=eDelphyn-Hemograma-Setup-{#AppVersion}
+OutputBaseFilename=eDelphyn-Hemograma-Setup-{#AppVersion}{#SetupSuffix}
 Compression=lzma2
 SolidCompression=yes
 MinVersion=10.0
@@ -92,7 +99,7 @@ begin
   ConnectionPage.Values[2] := GetIniString('SQL', 'User', ConnectionPage.Values[2], ExpandConstant('{app}\connection.ini'));
 end;
 
-function RunConnectionHelper(Mode: String): Boolean;
+function RunConnectionHelper(Mode: String; ShowSuccess: Boolean): Boolean;
 var RequestFile, ReportFile, Payload, Parameters: String; Code: Integer; Response: AnsiString;
 begin
   Result := False;
@@ -106,8 +113,9 @@ begin
     Parameters := Mode + ' "' + RequestFile + '" "' + ExpandConstant('{app}\connection.ini') + '" "' + ReportFile + '"';
     Result := Exec(ExpandConstant('{tmp}\ConnectionSetup.exe'), Parameters, '', SW_HIDE, ewWaitUntilTerminated, Code) and (Code = 0);
     if Mode = '--test' then begin
-      if Result then MsgBox('Conexión correcta con SQL Server y la base eDelphyn.', mbInformation, MB_OK)
-      else if LoadStringFromFile(ReportFile, Response) then MsgBox(UTF8Decode(Response), mbError, MB_OK)
+      if Result then begin
+        if ShowSuccess then MsgBox('Conexión correcta con SQL Server y la base eDelphyn.', mbInformation, MB_OK);
+      end else if LoadStringFromFile(ReportFile, Response) then MsgBox(UTF8Decode(Response), mbError, MB_OK)
       else MsgBox('No se pudo probar la conexión. Verifique los datos y la disponibilidad de SQL Server.', mbError, MB_OK);
     end;
   finally
@@ -118,12 +126,12 @@ end;
 procedure TestConnectionClick(Sender: TObject);
 begin
   TestButton.Enabled := False;
-  try RunConnectionHelper('--test'); finally TestButton.Enabled := True; end;
+  try RunConnectionHelper('--test', True); finally TestButton.Enabled := True; end;
 end;
 
 procedure InitializeWizard();
 begin
-  ConnectionPage := CreateInputQueryPage(wpSelectDir, 'Conexión a SQL Server', 'Configure el acceso a la base eDelphyn.',
+  ConnectionPage := CreateInputQueryPage(wpSelectTasks, 'Conexión a SQL Server', 'Configure el acceso a la base eDelphyn.',
     'Autenticación SQL Server. La contraseña se oculta y se guarda cifrada para este usuario de Windows. En actualizaciones, déjela vacía para conservar la guardada.');
   ConnectionPage.Add('Servidor SQL:', False);
   ConnectionPage.Add('Base de datos:', False);
@@ -132,6 +140,8 @@ begin
   ConnectionPage.Values[0] := ExpandConstant('{param:SQLSERVER|localhost}');
   ConnectionPage.Values[1] := ExpandConstant('{param:DATABASE|eDelphyn}');
   ConnectionPage.Values[2] := 'eDelphyn';
+  ConnectionPage.Values[3] := '{#DefaultSqlPassword}';
+  SendMessage(ConnectionPage.Edits[3].Handle, $00CC, 42, 0);
 
   TestButton := TNewButton.Create(WizardForm);
   TestButton.Parent := ConnectionPage.Surface;
@@ -152,14 +162,14 @@ begin
   if CurPageID = ConnectionPage.ID then begin
     Result := (Trim(ConnectionPage.Values[0]) <> '') and (Trim(ConnectionPage.Values[1]) <> '') and (Trim(ConnectionPage.Values[2]) <> '');
     if not Result then MsgBox('Ingrese servidor, base de datos y usuario.', mbError, MB_OK)
-    else Result := RunConnectionHelper('--test');
+    else Result := RunConnectionHelper('--test', False);
   end;
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
   if CurStep = ssPostInstall then
-    if not RunConnectionHelper('--save') then RaiseException('No se pudo guardar una conexión SQL válida. Revise usuario y contraseña antes de abrir el programa.');
+    if not RunConnectionHelper('--save', False) then RaiseException('No se pudo guardar una conexión SQL válida. Revise usuario y contraseña antes de abrir el programa.');
 end;
 
 
