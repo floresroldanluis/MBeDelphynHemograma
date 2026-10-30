@@ -2,7 +2,7 @@
 
 Aplicación de escritorio Windows Forms en C# / .NET Framework 4.8. Ejecutable: `dist/eDelphyn.Hemograma.exe`.
 
-## Instalación y actualización · versión 1.5.0
+## Instalación y actualización · versión 1.5.1
 
 Descargue el instalador desde [GitHub Releases](https://github.com/floresroldanluis/MBeDelphynHemograma/releases/latest). Incluye .NET Framework 4.8 sin necesidad de descargarlo al instalar. Si falta este componente, solicita permisos de administrador y puede requerir reiniciar Windows. La aplicación se instala para el usuario actual en Windows 10/11.
 
@@ -73,7 +73,7 @@ La firma local usa la huella pública configurada en Deployment.cs. La clave pri
 La variante -Privado precarga una contraseña oculta con asteriscos. Se genera con build-installer.ps1 -PrivateBuild y un archivo local installer/private-defaults.iss, excluido de Git. Nunca publique esa variante ni su archivo de configuración. La versión pública mantiene la contraseña vacía. Siguiente prueba la conexión y avanza directamente a Listo para instalar; ante un error permanece en la página SQL.
 
 
-## Inicio de sesión y soporte · 1.5.0
+## Inicio de sesión y soporte · 1.5.1
 
 Al abrir se solicita usuario y contraseña de eDelphyn mediante un formulario propio con botón Acceder. La conexión técnica SQL del instalador es independiente de esta cuenta. La validación consulta USR/PWD/USERPROFILE, exige cuenta activa y no bloqueada y respeta DAT_PASSWORD y NUM_EXPIRY. No crea cuentas ni altera contraseñas o contadores de intentos de eDelphyn. El formulario aplica una espera local tras fallos; no sustituye los controles del servidor.
 
@@ -82,3 +82,7 @@ Compatibilidad comprobada mediante inspección del código instalado de eDelphyn
 El subtítulo es «Visualización y eliminación de pruebas de hemograma del eDelphyn». Las actualizaciones están únicamente en Configuración. Acerca de y el pie principal incluyen los datos de soporte proporcionados por Diagnóstico UAL; Acerca de se cierra con X o Escape.
 
 Las pruebas de restauración y autenticación escriben exclusivamente en tablas temporales. Los XML de prueba y las capturas locales no se publican. Los nuevos respaldos de eliminación incluyen la identidad eDelphyn autenticada.
+
+## Cierre de popups · 1.5.1
+
+Acerca de y Configuración usan la ventana principal como propietaria modal. La capa oscura no toma el foco y se oculta al cerrar, sin deshabilitar y habilitar de nuevo todos los controles. La prueba verify-popup-stress.ps1 abre/cierra ambos popups repetidamente con 1000 filas, comprueba la limpieza, la habilitación nativa y que el bucle de mensajes siga respondiendo.

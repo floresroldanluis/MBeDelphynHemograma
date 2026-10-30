@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -56,7 +56,7 @@ namespace Hemograma
         readonly Panel chrome;
         internal DialogResult ShowDimmed(Form owner)
         {
-            using (var backdrop = new Form())
+            using (var backdrop = new DimBackdrop())
             {
                 backdrop.FormBorderStyle = FormBorderStyle.None;
                 backdrop.ShowInTaskbar = false;
@@ -65,27 +65,32 @@ namespace Hemograma
                 backdrop.BackColor = Color.Black;
                 backdrop.Opacity = 0.45;
                 backdrop.Text = "Fondo del diálogo";
-                EventHandler followOwner = (s, e) => backdrop.Bounds = owner.Bounds;
+                EventHandler followOwner = (s, e) => { if (backdrop.Bounds != owner.Bounds) backdrop.Bounds = owner.Bounds; };
                 owner.LocationChanged += followOwner;
                 owner.SizeChanged += followOwner;
                 Form previousOwner = Owner;
-                bool ownerWasEnabled = owner.Enabled;
                 try
                 {
-                    owner.Enabled = false;
                     backdrop.Owner = owner; backdrop.Show();
-                    Owner = backdrop;
-                    return ShowDialog(backdrop);
+                    Owner = owner;
+                    return ShowDialog(owner);
                 }
                 finally
                 {
                     owner.LocationChanged -= followOwner;
                     owner.SizeChanged -= followOwner;
+                    backdrop.Hide();
                     Owner = previousOwner;
                     backdrop.Close();
-                    if (!owner.IsDisposed) owner.Enabled = ownerWasEnabled;
-                    if (!owner.IsDisposed && owner.Visible) owner.Activate();
                 }
+            }
+        }
+        sealed class DimBackdrop : Form
+        {
+            protected override bool ShowWithoutActivation { get { return true; } }
+            protected override CreateParams CreateParams
+            {
+                get { var parameters = base.CreateParams; parameters.ExStyle |= 0x08000000 | 0x00000080; return parameters; }
             }
         }
         protected PopupForm()

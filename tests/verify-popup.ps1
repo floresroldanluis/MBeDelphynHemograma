@@ -1,5 +1,6 @@
 ﻿$ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Windows.Forms,System.Drawing
+Add-Type 'using System; using System.Runtime.InteropServices; public static class PopupNative { [DllImport("user32.dll")] public static extern bool IsWindowEnabled(IntPtr handle); }'
 $root = Split-Path $PSScriptRoot -Parent
 $assembly = [Reflection.Assembly]::LoadFrom((Join-Path $root 'dist\eDelphyn.Hemograma.exe'))
 $method = $assembly.GetType('Hemograma.PopupForm').GetMethod('ShowDimmed',[Reflection.BindingFlags]'Instance,NonPublic')
@@ -18,12 +19,12 @@ try {
             $timer.Add_Tick({
                 $timer.Stop()
                 try {
-                    $backdrop = $popup.Owner
+                    $backdrop = @([Windows.Forms.Application]::OpenForms | Where-Object { $_.Text -eq 'Fondo del diálogo' })[0]
                     if ($backdrop.Text -ne 'Fondo del diálogo' -or $backdrop.Owner -ne $owner) { throw ('Incorrect ownership: ' + [string]$backdrop.Text + ' / ' + [string]$backdrop.Owner.Text) }
                     if ($backdrop.Bounds -ne $owner.Bounds) { throw 'Backdrop must cover the owner' }
                     if ($backdrop.Opacity -ne 0.45 -or $backdrop.BackColor -ne [Drawing.Color]::Black) { throw 'Incorrect dimming' }
                     if ($popup.Opacity -ne 1 -or -not $popup.Enabled) { throw 'Popup must remain opaque and interactive' }
-                    if ($owner.Enabled) { throw 'Background must be disabled during the modal' }
+                    if ([PopupNative]::IsWindowEnabled($owner.Handle)) { throw 'Background must be disabled during the modal' }
                 } catch { $script:failure = $_ }
                 finally { $popup.Close() }
             })
@@ -31,7 +32,7 @@ try {
                 $timer.Start()
                 [void]$method.Invoke($popup,[object[]]@([Windows.Forms.Form]$owner))
                 if ($script:failure) { throw $script:failure }
-                if (-not $owner.Enabled) { throw 'Owner was not restored' }
+                if (-not $owner.Enabled -or -not [PopupNative]::IsWindowEnabled($owner.Handle)) { throw 'Owner was not restored' }
                 foreach ($form in [Windows.Forms.Application]::OpenForms) {
                     if ($form.Text -eq 'Fondo del diálogo') { throw 'Backdrop was not removed' }
                 }
