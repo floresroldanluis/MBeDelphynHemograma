@@ -1,0 +1,12 @@
+﻿eDelphyn Hemograma
+
+Asistente para Windows 10/11. Incluye .NET Framework 4.8; si falta, solicita autorización de administrador para instalarlo.
+
+Seleccione la carpeta y configure el servidor SQL. Ingrese usuario y contraseña de SQL Server y pulse Probar conexión. La contraseña se muestra oculta y se guarda cifrada para su usuario de Windows.
+
+La aplicación permite buscar donaciones y eliminar únicamente las pruebas de hemograma seleccionadas, previa confirmación y respaldo.
+
+Esta edición utiliza un certificado de firma local. La confianza en ese certificado debe ser revisada y gestionada por TI en otros equipos; el instalador no instala certificados ni modifica el antivirus.
+
+Configuración permite buscar versiones estables en GitHub, descargar un instalador firmado de una versión posterior e instalarlo. La aplicación se reinicia al terminar el asistente de actualización. Los respaldos se conservan en el perfil del usuario y no se borran al desinstalar.
+

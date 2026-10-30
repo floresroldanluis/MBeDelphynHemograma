@@ -1,0 +1,12 @@
+dist/
+release/
+signing/
+tools/
+.publish/
+installer/prerequisites/
+connection.ini
+*.log
+tests/*.png
+tests/*.txt
+tests/*.xml
+tests/.*/
