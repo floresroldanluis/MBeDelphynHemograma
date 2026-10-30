@@ -21,14 +21,18 @@ namespace Hemograma
         internal string InstallerPath { get; private set; }
         public SettingsForm(bool dark, Icon icon)
         {
-            Text = "Configuración · eDelphyn"; Icon = icon; ClientSize = new Size(740, 370);
+            Text = "Configuración · eDelphyn"; Icon = icon; ClientSize = new Size(480, 310);
             StartPosition = FormStartPosition.CenterParent; Font = new Font("Segoe UI", 10); MaximizeBox = false; MinimizeBox = false;
-            var layout = new TableLayoutPanel { Dock = DockStyle.Fill, Padding = new Padding(24, 4, 24, 24), ColumnCount = 1, RowCount = 7 };
-            int[] heights = { 42, 30, 36, 35, 50, 56, 23 };
+            var layout = new TableLayoutPanel { Dock = DockStyle.Fill, Padding = new Padding(24, 4, 24, 12), ColumnCount = 1, RowCount = 7 };
+            int[] heights = { 42, 26, 32, 30, 46, 56, 18 };
             foreach (int height in heights) layout.RowStyles.Add(new RowStyle(SizeType.Absolute, height));
             layout.Controls.Add(new Label { Text = "Configuración · Actualizaciones", Font = new Font("Segoe UI", 18, FontStyle.Bold), AutoSize = true }, 0, 0);
             layout.Controls.Add(new Label { Text = "Versión instalada: " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(3), AutoSize = true }, 0, 1);
-            layout.Controls.Add(new TextBox { Text = GitHubUpdates.RepositoryUrl, ReadOnly = true, Dock = DockStyle.Fill }, 0, 2);
+            int repositoryWidth = TextRenderer.MeasureText(GitHubUpdates.RepositoryUrl, Font, Size.Empty, TextFormatFlags.NoPadding | TextFormatFlags.SingleLine).Width + 8;
+            ClientSize = new Size(Math.Max(480, repositoryWidth + 56), 310);
+            var repository = new TextBox { Text = GitHubUpdates.RepositoryUrl, ReadOnly = true, Width = repositoryWidth, Anchor = AnchorStyles.Left };
+            layout.Controls.Add(repository, 0, 2);
+            Shown += (s, e) => repository.Width = TextRenderer.MeasureText(repository.Text, repository.Font, Size.Empty, TextFormatFlags.NoPadding | TextFormatFlags.SingleLine).Width + 8;
             var link = new LinkLabel { Text = "Abrir repositorio en GitHub", AutoSize = true };
             link.LinkClicked += (s, e) => Process.Start(new ProcessStartInfo(GitHubUpdates.RepositoryUrl) { UseShellExecute = true });
             layout.Controls.Add(link, 0, 3);
