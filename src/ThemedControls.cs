@@ -54,6 +54,40 @@ namespace Hemograma
     internal class PopupForm : Form
     {
         readonly Panel chrome;
+        internal DialogResult ShowDimmed(Form owner)
+        {
+            using (var backdrop = new Form())
+            {
+                backdrop.FormBorderStyle = FormBorderStyle.None;
+                backdrop.ShowInTaskbar = false;
+                backdrop.StartPosition = FormStartPosition.Manual;
+                backdrop.Bounds = owner.Bounds;
+                backdrop.BackColor = Color.Black;
+                backdrop.Opacity = 0.45;
+                backdrop.Text = "Fondo del diálogo";
+                EventHandler followOwner = (s, e) => backdrop.Bounds = owner.Bounds;
+                owner.LocationChanged += followOwner;
+                owner.SizeChanged += followOwner;
+                Form previousOwner = Owner;
+                bool ownerWasEnabled = owner.Enabled;
+                try
+                {
+                    owner.Enabled = false;
+                    backdrop.Owner = owner; backdrop.Show();
+                    Owner = backdrop;
+                    return ShowDialog(backdrop);
+                }
+                finally
+                {
+                    owner.LocationChanged -= followOwner;
+                    owner.SizeChanged -= followOwner;
+                    Owner = previousOwner;
+                    backdrop.Close();
+                    if (!owner.IsDisposed) owner.Enabled = ownerWasEnabled;
+                    if (!owner.IsDisposed && owner.Visible) owner.Activate();
+                }
+            }
+        }
         protected PopupForm()
         {
             FormBorderStyle = FormBorderStyle.None; ShowInTaskbar = false;
@@ -88,3 +122,4 @@ namespace Hemograma
         }
     }
 }
+

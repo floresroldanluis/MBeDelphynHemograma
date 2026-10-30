@@ -92,7 +92,7 @@ namespace Hemograma
             foreach (var button in new[] { about, theme, settings })
             { button.Margin = new Padding(6, 0, 6, 0); tools.Controls.Add(button); tips.SetToolTip(button, button.AccessibleName); }
             headerTools.Controls.Add(tools);
-            about.Click += (s, e) => { using (var popup = new AboutForm(darkTheme, Icon)) popup.ShowDialog(this); };
+            about.Click += (s, e) => { using (var popup = new AboutForm(darkTheme, Icon)) popup.ShowDimmed(this); };
             theme.Click += (s, e) =>
             {
                 darkTheme = !darkTheme; AppTheme.Apply(this, darkTheme);
@@ -210,7 +210,7 @@ namespace Hemograma
             if (busy) return;
             string installer = null;
             using (var settings = new SettingsForm(darkTheme, Icon))
-                if (settings.ShowDialog(this) == DialogResult.OK) installer = settings.InstallerPath;
+                if (settings.ShowDimmed(this) == DialogResult.OK) installer = settings.InstallerPath;
             if (!String.IsNullOrEmpty(installer)) Deployment.InstallAndRestart(this, installer);
         }
         static void AddRange(GroupBox box, Control from, Control to)

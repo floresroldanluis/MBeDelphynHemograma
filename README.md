@@ -2,7 +2,7 @@
 
 Aplicación de escritorio Windows Forms en C# / .NET Framework 4.8. Ejecutable: `dist/eDelphyn.Hemograma.exe`.
 
-## Instalación y actualización · versión 1.4.1
+## Instalación y actualización · versión 1.4.2
 
 Descargue el instalador desde [GitHub Releases](https://github.com/floresroldanluis/MBeDelphynHemograma/releases/latest). Incluye .NET Framework 4.8 sin necesidad de descargarlo al instalar. Si falta este componente, solicita permisos de administrador y puede requerir reiniciar Windows. La aplicación se instala para el usuario actual en Windows 10/11.
 
