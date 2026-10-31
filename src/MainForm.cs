@@ -81,12 +81,12 @@ namespace Hemograma
                 if (iconStream != null) using (var appIcon = new Icon(iconStream)) Icon = (Icon)appIcon.Clone();
             Text = "eDelphyn · Gestión de hemograma"; Size = new Size(1260, 850); MinimumSize = new Size(1000, 740);
             StartPosition = FormStartPosition.CenterScreen; Font = new Font("Segoe UI", 10); BackColor = Color.FromArgb(244, 247, 250);
-            var layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 7, Padding = new Padding(24, 12, 24, 12) };
+            var layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 6, Padding = new Padding(24, 12, 24, 12) };
             layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 76)); layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 143));
             layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40)); layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 144)); layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 150));
             layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 72));
-            layout.Controls.Add(ProductInfo.SupportLabel(), 0, 6);
+            layout.Controls.Add(ProductInfo.SupportLabel(), 0, 5);
             Controls.Add(layout);
             var tools = new FlowLayoutPanel { Dock = DockStyle.Right, Width = 166, WrapContents = false };
             var about = new HeaderButton("\uE946", "Acerca de");
@@ -162,8 +162,9 @@ namespace Hemograma
                 e.ToolTipText = kind == 3 ? "No tiene Prueba" : kind == 2 ? "Sin Resultado" : "";
             };
             layout.Controls.Add(grid, 0, 3);
-            var bottom = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 2, ColumnCount = 1 };
-            bottom.RowStyles.Add(new RowStyle(SizeType.Absolute, 85));
+            var bottom = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 3, ColumnCount = 1 };
+            bottom.RowStyles.Add(new RowStyle(SizeType.Absolute, 65));
+            bottom.RowStyles.Add(new RowStyle(SizeType.Absolute, 26));
             bottom.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
             var testSection = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2, Padding = new Padding(8, 5, 0, 0) };
             testSection.RowStyles.Add(new RowStyle(SizeType.Absolute, 25));
@@ -179,7 +180,9 @@ namespace Hemograma
                 check.CheckedChanged += (s, e) => UpdateSelection();
                 testPanel.Controls.Add(check);
             }
-            bottom.Controls.Add(testSection, 0, 0); bottom.Controls.Add(actions, 0, 1);
+            bottom.Controls.Add(testSection, 0, 0);
+            status.AutoSize = false; status.Dock = DockStyle.Fill; status.TextAlign = ContentAlignment.MiddleLeft; status.Padding = new Padding(8, 0, 0, 0);
+            bottom.Controls.Add(status, 0, 1); bottom.Controls.Add(actions, 0, 2);
             actions.Controls.Add(delete);
             var backupButton = new AccentButton { Text = "Ver respaldos", Width = 135, Height = 37, Margin = new Padding(20, 3, 3, 3) };
             backupButton.Click += async (s, e) =>
@@ -192,7 +195,7 @@ namespace Hemograma
                 }
             };
             actions.Controls.Add(backupButton); layout.Controls.Add(bottom, 0, 4);
-            status.Text = "Ingrese un rango y pulse Buscar. No se ha eliminado ninguna prueba."; layout.Controls.Add(status, 0, 5);
+            status.Text = "Ingrese un rango y pulse Buscar. No se ha eliminado ninguna prueba.";
             delete.Enabled = false; delete.Click += async (s, e) => await DeleteAsync();
             fromCode.TextChanged += DonationCodeChanged; toCode.TextChanged += DonationCodeChanged;
             fromDate.ValueChanged += InvalidateSearch; toDate.ValueChanged += InvalidateSearch;

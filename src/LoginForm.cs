@@ -15,6 +15,15 @@ namespace Hemograma
         bool working;
         int failures;
         internal LoginIdentity Identity { get; private set; }
+        protected override bool ProcessDialogKey(Keys keyData)
+        {
+            if (keyData == Keys.Enter && (user.ContainsFocus || password.ContainsFocus))
+            {
+                if (!working) { if (user.ContainsFocus) password.Focus(); else access.PerformClick(); }
+                return true;
+            }
+            return base.ProcessDialogKey(keyData);
+        }
         public LoginForm(string connectionString)
         {
             Text = "Iniciar sesión · eDelphyn Hemograma";
@@ -33,9 +42,13 @@ namespace Hemograma
             layout.Controls.Add(new Label { Text = "Contraseña", AutoSize = true }, 0, 5); layout.Controls.Add(password, 0, 6);
             layout.Controls.Add(access, 0, 7); layout.Controls.Add(state, 0, 8); layout.Controls.Add(ProductInfo.SupportLabel(), 0, 9);
             Controls.Add(layout); AppTheme.Apply(this, AppTheme.LoadDark()); AcceptButton = access;
+            user.TabIndex = 0; password.TabIndex = 1; access.TabIndex = 2;
+            Shown += (s, e) => { ActiveControl = user; user.Focus(); };
             access.Click += async (s, e) =>
             {
                 if (working) return;
+                if (String.IsNullOrWhiteSpace(user.Text)) { state.Text = "Ingrese su usuario de eDelphyn."; user.Focus(); return; }
+                if (String.IsNullOrEmpty(password.Text)) { state.Text = "Ingrese su contraseña de eDelphyn."; password.Focus(); return; }
                 working = true; access.Enabled = user.Enabled = password.Enabled = false; state.Text = "Validando acceso…";
                 string login = user.Text, secret = password.Text;
                 try

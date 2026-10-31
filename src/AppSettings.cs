@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
@@ -88,7 +88,17 @@ namespace Hemograma
                 using (var brush = new SolidBrush(Dark ? Color.FromArgb(40, 59, 80) : hover ? Color.FromArgb(218, 236, 253) : Color.FromArgb(234, 242, 252))) e.Graphics.FillPath(brush, path);
                 using (var pen = new Pen(Dark ? Color.FromArgb(69, 100, 133) : Color.FromArgb(210, 227, 244))) e.Graphics.DrawPath(pen, path);
             }
-            TextRenderer.DrawText(e.Graphics, Text, Font, ClientRectangle, Enabled ? (Dark ? Color.SkyBlue : Color.FromArgb(30, 137, 235)) : Color.Gray, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+            using (var glyph = new GraphicsPath())
+            {
+                glyph.AddString(Text, Font.FontFamily, (int)Font.Style, Font.SizeInPoints * e.Graphics.DpiY / 72f, PointF.Empty, StringFormat.GenericTypographic);
+                RectangleF bounds = glyph.GetBounds();
+                using (var transform = new Matrix())
+                {
+                    transform.Translate(r.Left + r.Width / 2f - bounds.Left - bounds.Width / 2f, r.Top + r.Height / 2f - bounds.Top - bounds.Height / 2f);
+                    glyph.Transform(transform);
+                }
+                using (var brush = new SolidBrush(Enabled ? (Dark ? Color.SkyBlue : Color.FromArgb(30, 137, 235)) : Color.Gray)) e.Graphics.FillPath(brush, glyph);
+            }
             if (Focused && ShowFocusCues) ControlPaint.DrawFocusRectangle(e.Graphics, new Rectangle(5, 5, Width - 10, Height - 10));
         }
     }
