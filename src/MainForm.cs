@@ -105,6 +105,25 @@ namespace Hemograma
             };
             settings.Click += (s, e) => ShowSettings();
             FormClosed += (s, e) => tips.Dispose();
+            if (identity != null)
+            {
+                var retentionTimer = new System.Windows.Forms.Timer { Interval = 3600000 };
+                bool cleaning = false;
+                EventHandler cleanBackups = async (sender, args) => {
+                    if (cleaning) return; cleaning = true;
+                    try
+                    {
+                        var result = await Task.Run(() => BackupRetention.Clean(backupRoot, DateTime.UtcNow));
+                        if (!IsDisposed && result.Failed > 0) status.Text = "No se pudieron borrar algunos respaldos antiguos. Revise los permisos de la carpeta Respaldos.";
+                    }
+                    catch (Exception ex) { if (!IsDisposed) status.Text = "No se pudieron limpiar los respaldos: " + ex.Message; }
+                    finally { cleaning = false; }
+                };
+                Shown += cleanBackups; retentionTimer.Tick += cleanBackups;
+                Shown += (sender, args) => retentionTimer.Start();
+                FormClosed += (sender, args) => retentionTimer.Dispose();
+            }
+
             var heading = new Panel { Dock = DockStyle.Fill };
             var titleLabel = new Label { Text = "Resultados Inmunohematológicos de Donantes", AutoSize = false, Height = 42, TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 21, FontStyle.Bold), ForeColor = Color.FromArgb(27, 58, 86) };
             heading.Controls.Add(titleLabel);

@@ -62,22 +62,32 @@ namespace Hemograma
                 backdrop.FormBorderStyle = FormBorderStyle.None;
                 backdrop.ShowInTaskbar = false;
                 backdrop.StartPosition = FormStartPosition.Manual;
-                backdrop.Bounds = owner.Bounds;
+                backdrop.AutoScaleMode = AutoScaleMode.None;
+                backdrop.Bounds = owner.RectangleToScreen(owner.ClientRectangle);
                 backdrop.BackColor = Color.Black;
                 backdrop.Opacity = 0.45;
                 backdrop.Text = "Fondo del diálogo";
-                EventHandler followOwner = (s, e) => { if (backdrop.Bounds != owner.Bounds) backdrop.Bounds = owner.Bounds; };
+                Action fit = () => {
+                    Rectangle area = owner.RectangleToScreen(owner.ClientRectangle);
+                    if (backdrop.Bounds != area) backdrop.Bounds = area;
+                    Size = new Size(Math.Min(Width, Math.Max(1, area.Width - 24)), Math.Min(Height, Math.Max(1, area.Height - 24)));
+                    Location = new Point(area.Left + (area.Width - Width) / 2, area.Top + (area.Height - Height) / 2);
+                };
+                StartPosition = FormStartPosition.Manual;
+                EventHandler followOwner = (s, e) => fit();
+                Shown += followOwner;
                 owner.LocationChanged += followOwner;
                 owner.SizeChanged += followOwner;
                 Form previousOwner = Owner;
                 try
                 {
                     backdrop.Owner = owner; backdrop.Show();
-                    Owner = owner;
+                    Owner = owner; fit();
                     return ShowDialog(owner);
                 }
                 finally
                 {
+                    Shown -= followOwner;
                     owner.LocationChanged -= followOwner;
                     owner.SizeChanged -= followOwner;
                     backdrop.Hide();

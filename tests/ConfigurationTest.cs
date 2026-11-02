@@ -10,6 +10,19 @@ class ConfigurationTest {
  static void Main() {
   string folder=Path.Combine(Path.GetTempPath(),"hemograma-config-"+Guid.NewGuid().ToString("N")); Directory.CreateDirectory(folder);
   try {
+   DateTime retentionNow=new DateTime(2026,11,2,12,0,0,DateTimeKind.Utc);
+   Func<DateTime,string> backupPath=date=>Path.Combine(folder,"hemograma-"+date.ToString("yyyyMMdd-HHmmss")+"-"+Guid.NewGuid().ToString("N")+".xml");
+   string expired=backupPath(retentionNow.AddMonths(-3).AddSeconds(-1)), boundary=backupPath(retentionNow.AddMonths(-3)), recent=backupPath(retentionNow.AddDays(-1)), locked=backupPath(retentionNow.AddMonths(-4));
+   foreach(string file in new[]{expired,boundary,recent,locked})File.WriteAllText(file,"fixture");
+   File.SetLastWriteTimeUtc(expired,retentionNow);File.SetLastWriteTimeUtc(recent,retentionNow.AddYears(-1));
+   string unrelated=Path.Combine(folder,"hemograma-manual.xml");File.WriteAllText(unrelated,"unrelated");
+   using(var held=new FileStream(locked,FileMode.Open,FileAccess.Read,FileShare.None)) {
+    var retained=BackupRetention.Clean(folder,retentionNow);
+    Check(!File.Exists(expired)&&File.Exists(boundary)&&File.Exists(recent)&&File.Exists(unrelated),"Three calendar months; stable filename date; unrelated files untouched");
+    Check(retained.Failed==1&&retained.Files.Length==2&&!retained.Files.Contains(locked),"Locked expired file reported and excluded");
+   }
+   Check(BackupRetention.Clean(folder,retentionNow).Failed==0&&!File.Exists(locked),"Cleanup retries expired file");
+   foreach(string file in new[]{boundary,recent,unrelated})File.Delete(file);
    string ini=Path.Combine(folder,"connection.ini");
    var original=new SqlConnectionStringBuilder {DataSource="localhost",InitialCatalog="fixture",UserID="usuario-prueba",Password="clave-sintetica"};
    SqlSettings.Save(original,ini);

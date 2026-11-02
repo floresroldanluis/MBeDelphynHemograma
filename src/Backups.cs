@@ -5,9 +5,51 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace Hemograma
 {
+    internal sealed class RetainedBackups
+    {
+        internal string[] Files;
+        internal int Failed;
+    }
+    internal static class BackupRetention
+    {
+        static readonly Regex NamePattern = new Regex(@"^hemograma-(\d{8}-\d{6})-[0-9a-fA-F]{32}\.xml$", RegexOptions.CultureInvariant);
+        internal static DateTime? Timestamp(string path)
+        {
+            var match = NamePattern.Match(Path.GetFileName(path)); DateTime date;
+            if (!match.Success || !DateTime.TryParseExact(match.Groups[1].Value, "yyyyMMdd-HHmmss", CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out date)) return null;
+            return date;
+        }
+        internal static RetainedBackups Clean(string folder, DateTime nowUtc)
+        {
+            string root = Path.GetFullPath(folder).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            var files = new List<string>(); int failed = 0;
+            if (!Directory.Exists(root)) return new RetainedBackups { Files = files.ToArray() };
+            if ((File.GetAttributes(root) & FileAttributes.ReparsePoint) != 0) throw new IOException("La carpeta de respaldos no puede ser un enlace a otra carpeta.");
+            DateTime cutoff = nowUtc.ToUniversalTime().AddMonths(-3);
+            foreach (string file in Directory.GetFiles(root, "hemograma-*.xml", SearchOption.TopDirectoryOnly))
+            {
+                string path = Path.GetFullPath(file);
+                if (!String.Equals(Path.GetDirectoryName(path) + Path.DirectorySeparatorChar, root, StringComparison.OrdinalIgnoreCase)) continue;
+                DateTime? timestamp = Timestamp(path);
+                if (!timestamp.HasValue) continue;
+                try
+                {
+                    if ((File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0) continue;
+                    if (timestamp.Value < cutoff) File.Delete(path);
+                    else files.Add(path);
+                }
+                catch (IOException) { failed++; }
+                catch (UnauthorizedAccessException) { failed++; }
+            }
+            return new RetainedBackups { Files = files.OrderByDescending(path => Timestamp(path).Value).ToArray(), Failed = failed };
+        }
+    }
     internal sealed partial class Repository
     {
         internal static DataSet LoadBackup(string path)

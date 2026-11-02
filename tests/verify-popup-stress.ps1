@@ -27,7 +27,7 @@ try {
                 try {
                     $backdrop = @([Windows.Forms.Application]::OpenForms | Where-Object { $_.Text -eq 'Fondo del diálogo' })[0]
                     if ($backdrop.Text -ne 'Fondo del diálogo' -or $backdrop.Owner -ne $owner) { throw ('Incorrect ownership: ' + [string]$backdrop.Text + ' / ' + [string]$backdrop.Owner.Text) }
-                    if ($backdrop.Bounds -ne $owner.Bounds) { throw 'Backdrop must cover the owner' }
+                    if ($backdrop.Bounds -ne $owner.RectangleToScreen($owner.ClientRectangle)) { throw 'Backdrop must cover the owner' }
                     if ($backdrop.Opacity -ne 0.45 -or $backdrop.BackColor -ne [Drawing.Color]::Black) { throw 'Incorrect dimming' }
                     if ($popup.Opacity -ne 1 -or -not $popup.Enabled) { throw 'Popup must remain opaque and interactive' }
                     if ([PopupNative]::IsWindowEnabled($owner.Handle)) { throw 'Background must be disabled during the modal' }

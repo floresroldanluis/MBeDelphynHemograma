@@ -122,7 +122,7 @@ namespace Hemograma
             }
         }
         public DeleteResult Delete(SearchResult snapshot, decimal[] ids, string backupRoot, int[] selectedTests)
-        { using (var c = Open()) return Delete(c, snapshot, ids, backupRoot, selectedTests); }
+        { BackupRetention.Clean(backupRoot, DateTime.UtcNow); using (var c = Open()) return Delete(c, snapshot, ids, backupRoot, selectedTests); }
         internal DeleteResult Delete(SqlConnection c, SearchResult snapshot, decimal[] ids, string backupRoot, int[] selectedTests = null)
         {
             selectedTests = (selectedTests ?? TestIds).Distinct().ToArray();

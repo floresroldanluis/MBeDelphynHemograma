@@ -118,3 +118,9 @@ El instalador recupera servidor, base y usuario para su pantalla de configuraci�
 ## Configuración visual · 1.6.3
 
 Popup de preferencias con título, sección de actualización, repositorio enlazado, botones redondeados y mensaje de estado bajo las acciones. Mantiene las funciones de consulta, descarga verificada, instalación y reinicio, y los temas claro y oscuro.
+
+## Retención de respaldos y límites del popup · 1.6.4
+
+Solo se muestran y conservan los respaldos generados durante los últimos tres meses calendario, calculados en UTC por la fecha del nombre original (no por la fecha de la donación ni la de modificación del archivo). Se limpian al iniciar sesión, cada hora mientras la aplicación permanece abierta, al abrir Ver respaldos y antes de crear un nuevo respaldo. Si la aplicación está cerrada, la limpieza pendiente se realiza en la siguiente apertura. Archivos bloqueados o sin permisos se omiten del visor y se informa del problema; se reintenta la limpieza posteriormente. Solo se borran archivos con el nombre generado por la aplicación dentro de Respaldos, sin recorrer subcarpetas ni enlaces.
+
+La capa oscura se limita al área interior de la ventana principal. El popup también se ajusta al espacio de esa ventana, y ambos siguen sus cambios de posición y tamaño.

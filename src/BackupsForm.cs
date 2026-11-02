@@ -24,7 +24,7 @@ namespace Hemograma
         sealed class BackupItem
         {
             internal string Path;
-            public override string ToString() { return File.GetLastWriteTime(Path).ToString("dd/MM/yyyy HH:mm:ss") + " — Respaldo " + String.Concat(System.IO.Path.GetFileNameWithoutExtension(Path).Split('-').Last().Take(6)); }
+            public override string ToString() { return BackupRetention.Timestamp(Path).Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss") + " — Respaldo " + String.Concat(System.IO.Path.GetFileNameWithoutExtension(Path).Split('-').Last().Take(6)); }
         }
         public BackupsForm(Repository repository, string folder, bool dark, Icon icon)
         {
@@ -38,7 +38,7 @@ namespace Hemograma
             foreach (int height in new[] { 44, 46, 46 }) layout.RowStyles.Add(new RowStyle(SizeType.Absolute, height));
             layout.Controls.Add(new Label { Text = "Respaldos de hemograma", Font = new Font("Segoe UI", 18, FontStyle.Bold), AutoSize = true }, 0, 0);
             layout.Controls.Add(files, 0, 1);
-            layout.Controls.Add(new Label { Text = "Cada fila muestra una prueba guardada antes de intentar eliminarla. El estado se consulta en la base actual: solo pueden restaurarse pruebas ausentes. El archivo original se conserva.", Dock = DockStyle.Fill }, 0, 2);
+            layout.Controls.Add(new Label { Text = "Cada fila muestra una prueba guardada antes de intentar eliminarla. El estado se consulta en la base actual: solo pueden restaurarse pruebas ausentes. Solo se conservan respaldos de los últimos 3 meses. Los anteriores se borran automáticamente.", Dock = DockStyle.Fill }, 0, 2);
             layout.Controls.Add(grid, 0, 3);
             var actions = new FlowLayoutPanel { Dock = DockStyle.Fill }; actions.Controls.Add(select); actions.Controls.Add(clear); actions.Controls.Add(refresh); actions.Controls.Add(restore); layout.Controls.Add(actions, 0, 4);
             layout.Controls.Add(status, 0, 5);
@@ -52,14 +52,17 @@ namespace Hemograma
             grid.CellValueChanged += (s, e) => UpdateSelection();
             grid.CellBeginEdit += (s, e) => { if (busy || !(bool)((DataRowView)grid.Rows[e.RowIndex].DataBoundItem)["Available"]) e.Cancel = true; };
             FormClosing += (s, e) => { if (busy) e.Cancel = true; };
-            Shown += (s, e) =>
+            Shown += async (s, e) =>
             {
                 try
                 {
                     Directory.CreateDirectory(folder);
-                    foreach (string path in Directory.GetFiles(folder, "hemograma-*.xml").OrderByDescending(File.GetLastWriteTime)) files.Items.Add(new BackupItem { Path = path });
+                    var retained = await Task.Run(() => BackupRetention.Clean(folder, DateTime.UtcNow));
+                    if (IsDisposed) return;
+                    foreach (string path in retained.Files) files.Items.Add(new BackupItem { Path = path });
+                    if (retained.Failed > 0) MessageBox.Show(this, "No se pudieron borrar " + retained.Failed + " respaldos antiguos. Revise los permisos o cierre los archivos abiertos.", "Limpieza de respaldos", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     if (files.Items.Count > 0) files.SelectedIndex = 0;
-                    else { status.Text = "Todavía no hay respaldos guardados en este equipo."; refresh.Enabled = select.Enabled = clear.Enabled = false; }
+                    else { status.Text = "No hay respaldos de los últimos 3 meses en este equipo."; refresh.Enabled = select.Enabled = clear.Enabled = false; }
                 }
                 catch (Exception ex) { status.Text = "No se pudieron abrir los respaldos: " + ex.Message; }
             };
@@ -88,6 +91,7 @@ namespace Hemograma
             backup = null; grid.DataSource = null; SetBusy(true); status.Text = "Leyendo respaldo y comprobando la base de datos…";
             try
             {
+                if (BackupRetention.Timestamp(path).Value < DateTime.UtcNow.AddMonths(-3)) throw new InvalidOperationException("Este respaldo superó los 3 meses de conservación. Cierre y vuelva a abrir el visor para actualizar la lista.");
                 var loaded = await Task.Run(() => Repository.LoadBackup(path));
                 DataTable display; string connectionError = null;
                 try { display = await Task.Run(() => repository.PreviewBackup(loaded)); }
@@ -110,6 +114,8 @@ namespace Hemograma
         async Task RestoreAsync()
         {
             if (busy || backup == null) return;
+            if (files.SelectedItem == null || BackupRetention.Timestamp(((BackupItem)files.SelectedItem).Path).Value < DateTime.UtcNow.AddMonths(-3))
+            { backup = null; UpdateSelection(); status.Text = "Este respaldo superó los 3 meses de conservación. Vuelva a abrir el visor."; return; }
             grid.EndEdit(); int[] indexes = Selected(); if (indexes.Length == 0) return;
             var display = (DataTable)grid.DataSource;
             var selected = display.AsEnumerable().Where(r => (bool)r["Seleccionar"] && (bool)r["Available"]).ToArray();
@@ -120,7 +126,7 @@ namespace Hemograma
             try
             {
                 int count = await Task.Run(() => repository.RestoreBackup(backup, indexes)); Changed = true;
-                MessageBox.Show(this, "Se restauraron " + count + " pruebas. El respaldo original se conserva.", "Restauración completada", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(this, "Se restauraron " + count + " pruebas. El respaldo original se conserva hasta cumplir 3 meses.", "Restauración completada", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex) { MessageBox.Show(this, "No se confirmó la restauración. Actualice el estado antes de reintentar.\n\n" + ex.Message, "Restauración no completada", MessageBoxButtons.OK, MessageBoxIcon.Warning); }
             finally { SetBusy(false); }
