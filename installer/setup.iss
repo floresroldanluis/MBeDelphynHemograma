@@ -1,4 +1,4 @@
-﻿#define AppVersion "1.6.1"
+﻿#define AppVersion "1.6.2"
 #ifdef PRIVATE_BUILD
   #include "private-defaults.iss"
   #define SetupSuffix "-Privado"
@@ -100,11 +100,15 @@ begin
   ConnectionPage.Values[2] := GetIniString('SQL', 'User', ConnectionPage.Values[2], ExpandConstant('{app}\connection.ini'));
   if HasNet48() and FileExists(ExpandConstant('{app}\connection.ini')) then begin
     if not HelperReady then begin ExtractTemporaryFile('ConnectionSetup.exe'); HelperReady := True; end;
-    ReportFile := ExpandConstant('{tmp}\connection-user.txt');
+    ReportFile := ExpandConstant('{tmp}\connection-settings.ini');
     try
-      Parameters := '--read-user "' + ExpandConstant('{tmp}\unused-request.ini') + '" "' + ExpandConstant('{app}\connection.ini') + '" "' + ReportFile + '"';
+      Parameters := '--read-settings "' + ExpandConstant('{tmp}\unused-request.ini') + '" "' + ExpandConstant('{app}\connection.ini') + '" "' + ReportFile + '"';
       if Exec(ExpandConstant('{tmp}\ConnectionSetup.exe'), Parameters, '', SW_HIDE, ewWaitUntilTerminated, Code) and (Code = 0) then
-        if LoadStringFromFile(ReportFile, Response) then ConnectionPage.Values[2] := UTF8Decode(Response);
+      begin
+        ConnectionPage.Values[0] := GetIniString('SQL', 'Server', ConnectionPage.Values[0], ReportFile);
+        ConnectionPage.Values[1] := GetIniString('SQL', 'Database', ConnectionPage.Values[1], ReportFile);
+        ConnectionPage.Values[2] := GetIniString('SQL', 'User', ConnectionPage.Values[2], ReportFile);
+      end;
     finally DeleteFile(ReportFile); end;
   end;
 end;

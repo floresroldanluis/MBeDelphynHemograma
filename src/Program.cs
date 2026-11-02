@@ -20,6 +20,8 @@ namespace Hemograma
                     ConfigurationManager.RefreshSection("appSettings");
                     TestSettings.Parse(ConfigurationManager.AppSettings["Hemograma.Pruebas"] ?? TestSettings.DefaultValue);
                     string connection = Deployment.ConnectionString();
+                    SqlSettings.ProtectConfiguration(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile);
+                    ConfigurationManager.RefreshSection("connectionStrings");
                     using (var login = new LoginForm(connection))
                         if (login.ShowDialog() == DialogResult.OK)
                         {

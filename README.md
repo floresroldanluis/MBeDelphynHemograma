@@ -108,3 +108,9 @@ La actualización agrega la clave a instalaciones antiguas sin reemplazar las pe
 `connection.ini` guarda `UserProtected` y `PasswordProtected`: ambos cifrados con DPAPI del usuario de Windows y representados en Base64. Base64 por sí solo es reversible y no constituye cifrado. La aplicación migra automáticamente el campo antiguo `User` al abrir; el instalador también escribe el nuevo formato. No copie estas credenciales a otro equipo o usuario: configure la conexión con el instalador en ese destino. No se publican credenciales en el `.exe.config` ni en GitHub. El instalador privado con contraseña precargada sigue siendo exclusivamente local.
 
 Desde 1.6.1 la configuración predeterminada se convierte al formato sin IDs al instalar o abrir. Las listas antiguas personalizadas `ID|Nombre|true/false` siguen siendo compatibles; no se reescriben automáticamente para conservar posibles alias personalizados. Para pasarlas al formato nuevo utilice nombres reales de TEST.
+
+## Cadena completa protegida · 1.6.2
+
+`connection.ini` contiene únicamente el método de protección y `ConnectionProtected`, con la cadena completa cifrada mediante DPAPI CurrentUser y representada en Base64. Incluye servidor, base de datos, usuario, contraseña y opciones de conexión. Se migran automáticamente los formatos anteriores. La conexión alternativa en `eDelphyn.Hemograma.exe.config` se protege con el prefijo `dpapi:` al instalar o abrir; las pruebas siguen editables y sin cifrar.
+
+El instalador recupera servidor, base y usuario para su pantalla de configuración; nunca muestra la contraseña guardada. Los datos cifrados solo se pueden utilizar bajo el mismo usuario de Windows y equipo. Para otro equipo, configure nuevamente la conexión en el instalador. Base64 no es cifrado por sí solo.
