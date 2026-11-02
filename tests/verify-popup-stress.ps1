@@ -3,6 +3,7 @@ Add-Type -AssemblyName System.Windows.Forms,System.Drawing
 Add-Type 'using System; using System.Runtime.InteropServices; public static class PopupNative { [DllImport("user32.dll")] public static extern bool IsWindowEnabled(IntPtr handle); }'
 $root = Split-Path $PSScriptRoot -Parent
 $assembly = [Reflection.Assembly]::LoadFrom((Join-Path $root 'dist\eDelphyn.Hemograma.exe'))
+& "$PSScriptRoot\initialize-test-catalog.ps1" -Assembly $assembly
 $method = $assembly.GetType('Hemograma.PopupForm').GetMethod('ShowDimmed',[Reflection.BindingFlags]'Instance,NonPublic')
 $owner = [Activator]::CreateInstance($assembly.GetType('Hemograma.MainForm'),[object[]]@('Data Source=localhost;Initial Catalog=eDelphyn;Integrated Security=True'))
 $grid=$owner.GetType().GetField('grid',[Reflection.BindingFlags]'NonPublic,Instance').GetValue($owner)

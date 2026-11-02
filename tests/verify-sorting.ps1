@@ -1,6 +1,7 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Windows.Forms,System.Drawing,System.Data
 $assembly = [Reflection.Assembly]::LoadFrom((Join-Path $PSScriptRoot '..\dist\eDelphyn.Hemograma.exe'))
+& "$PSScriptRoot\initialize-test-catalog.ps1" -Assembly $assembly
 $formType = $assembly.GetType('Hemograma.MainForm')
 $form = [Activator]::CreateInstance($formType, [object[]]@('Data Source=localhost;Initial Catalog=eDelphyn'))
 $flags = [Reflection.BindingFlags]'Instance,NonPublic'

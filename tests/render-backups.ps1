@@ -3,6 +3,7 @@ Add-Type -AssemblyName System.Windows.Forms,System.Drawing
 [Windows.Forms.Application]::EnableVisualStyles()
 $root=Split-Path $PSScriptRoot -Parent
 $a=[Reflection.Assembly]::LoadFrom((Join-Path $root 'dist\eDelphyn.Hemograma.exe'))
+& "$PSScriptRoot\initialize-test-catalog.ps1" -Assembly $a
 $repo=[Activator]::CreateInstance($a.GetType('Hemograma.Repository'),[object[]]@('Data Source=localhost;Initial Catalog=eDelphyn;Integrated Security=True'))
 $form=$a.GetType('Hemograma.BackupsForm').GetConstructors()[0].Invoke([object[]]@($repo.PSObject.BaseObject,[string](Join-Path $root 'dist\test-results'),[bool]$false,[Drawing.Icon][Drawing.SystemIcons]::Application))
 try {

@@ -10,7 +10,7 @@ Write-Output "Aplicación: $root\dist\eDelphyn.Hemograma.exe"
 
 
 
-& $compiler /nologo /target:winexe /optimize+ /utf8output "/out:$root\dist\ConnectionSetup.exe" /reference:System.dll /reference:System.Data.dll /reference:System.Security.dll /reference:System.Core.dll /reference:System.Xml.dll /reference:System.Configuration.dll "$root\installer\ConnectionSetup.cs" "$root\src\SqlSettings.cs" "$root\src\TestSettings.cs"
+& $compiler /nologo /target:winexe /optimize+ /utf8output "/out:$root\dist\ConnectionSetup.exe" /reference:System.dll /reference:System.Data.dll /reference:System.Data.DataSetExtensions.dll /reference:System.Security.dll /reference:System.Core.dll /reference:System.Xml.dll /reference:System.Configuration.dll "$root\installer\ConnectionSetup.cs" "$root\src\SqlSettings.cs" "$root\src\TestSettings.cs"
 if ($LASTEXITCODE -ne 0) { throw 'Error compilando el asistente SQL.' }
 if (Test-Path -LiteralPath "$root\signing\thumbprint.txt") {
     $thumbprint = (Get-Content "$root\signing\thumbprint.txt" -Raw).Trim()

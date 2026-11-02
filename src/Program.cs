@@ -18,11 +18,14 @@ namespace Hemograma
                     {
                     TestSettings.Ensure(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile);
                     ConfigurationManager.RefreshSection("appSettings");
-                    TestSettings.Load();
+                    TestSettings.Parse(ConfigurationManager.AppSettings["Hemograma.Pruebas"] ?? TestSettings.DefaultValue);
                     string connection = Deployment.ConnectionString();
                     using (var login = new LoginForm(connection))
                         if (login.ShowDialog() == DialogResult.OK)
+                        {
+                            TestSettings.Load();
                             Application.Run(new MainForm(connection, login.Identity));
+                        }
                 }
             }
             catch (Exception ex) { MessageBox.Show(ex.Message, "eDelphyn", MessageBoxButtons.OK, MessageBoxIcon.Error); }

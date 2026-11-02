@@ -3,6 +3,7 @@ Add-Type -AssemblyName System.Windows.Forms,System.Drawing
 [Windows.Forms.Application]::EnableVisualStyles()
 $root=Split-Path $PSScriptRoot -Parent
 $assembly=[Reflection.Assembly]::LoadFrom((Join-Path $root 'dist\eDelphyn.Hemograma.exe'))
+& "$PSScriptRoot\initialize-test-catalog.ps1" -Assembly $assembly
 $form=[Activator]::CreateInstance($assembly.GetType('Hemograma.MainForm'),[object[]]@('Data Source=localhost;Initial Catalog=eDelphyn;Integrated Security=True'))
 $theme=$assembly.GetType('Hemograma.AppTheme').GetMethod('Apply',[Reflection.BindingFlags]'Static,NonPublic')
 function Render($window,$name) {
