@@ -19,6 +19,8 @@ try {
     try { Render $login 'login.png' } finally { $login.Dispose() }
     $settings=[Activator]::CreateInstance($assembly.GetType('Hemograma.SettingsForm'),[object[]]@($true,[Drawing.Icon]$form.Icon))
     try { Render $settings 'settings-dark.png' } finally { $settings.Dispose() }
+    $settingsLight=[Activator]::CreateInstance($assembly.GetType('Hemograma.SettingsForm'),[object[]]@($false,[Drawing.Icon]$form.Icon))
+    try { Render $settingsLight 'settings-light.png' } finally { $settingsLight.Dispose() }
     $about=[Activator]::CreateInstance($assembly.GetType('Hemograma.AboutForm'),[object[]]@($false,[Drawing.Icon]$form.Icon))
     try { Render $about 'about-light.png' } finally { $about.Dispose() }
     $aboutDark=[Activator]::CreateInstance($assembly.GetType('Hemograma.AboutForm'),[object[]]@($true,[Drawing.Icon]$form.Icon))

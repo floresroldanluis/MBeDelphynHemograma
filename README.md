@@ -114,3 +114,7 @@ Desde 1.6.1 la configuración predeterminada se convierte al formato sin IDs al 
 `connection.ini` contiene únicamente el método de protección y `ConnectionProtected`, con la cadena completa cifrada mediante DPAPI CurrentUser y representada en Base64. Incluye servidor, base de datos, usuario, contraseña y opciones de conexión. Se migran automáticamente los formatos anteriores. La conexión alternativa en `eDelphyn.Hemograma.exe.config` se protege con el prefijo `dpapi:` al instalar o abrir; las pruebas siguen editables y sin cifrar.
 
 El instalador recupera servidor, base y usuario para su pantalla de configuración; nunca muestra la contraseña guardada. Los datos cifrados solo se pueden utilizar bajo el mismo usuario de Windows y equipo. Para otro equipo, configure nuevamente la conexión en el instalador. Base64 no es cifrado por sí solo.
+
+## Configuración visual · 1.6.3
+
+Popup de preferencias con título, sección de actualización, repositorio enlazado, botones redondeados y mensaje de estado bajo las acciones. Mantiene las funciones de consulta, descarga verificada, instalación y reinicio, y los temas claro y oscuro.

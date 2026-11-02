@@ -54,6 +54,7 @@ namespace Hemograma
     internal class PopupForm : Form
     {
         readonly Panel chrome;
+        protected Panel PopupChrome { get { return chrome; } }
         internal DialogResult ShowDimmed(Form owner)
         {
             using (var backdrop = new DimBackdrop())
