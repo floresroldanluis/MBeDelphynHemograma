@@ -2,7 +2,7 @@
 
 Aplicación de escritorio Windows Forms en C# / .NET Framework 4.8. Ejecutable: `dist/eDelphyn.Hemograma.exe`.
 
-## Instalación y actualización · versión 1.5.2
+## Instalación y actualización · versión 1.6.0
 
 Descargue el instalador desde [GitHub Releases](https://github.com/floresroldanluis/MBeDelphynHemograma/releases/latest). Incluye .NET Framework 4.8 sin necesidad de descargarlo al instalar. Si falta este componente, solicita permisos de administrador y puede requerir reiniciar Windows. La aplicación se instala para el usuario actual en Windows 10/11.
 
@@ -73,7 +73,7 @@ La firma local usa la huella pública configurada en Deployment.cs. La clave pri
 La variante -Privado precarga una contraseña oculta con asteriscos. Se genera con build-installer.ps1 -PrivateBuild y un archivo local installer/private-defaults.iss, excluido de Git. Nunca publique esa variante ni su archivo de configuración. La versión pública mantiene la contraseña vacía. Siguiente prueba la conexión y avanza directamente a Listo para instalar; ante un error permanece en la página SQL.
 
 
-## Inicio de sesión y soporte · 1.5.2
+## Inicio de sesión y soporte · 1.6.0
 
 Al abrir se solicita usuario y contraseña de eDelphyn mediante un formulario propio con botón Acceder. La conexión técnica SQL del instalador es independiente de esta cuenta. La validación consulta USR/PWD/USERPROFILE, exige cuenta activa y no bloqueada y respeta DAT_PASSWORD y NUM_EXPIRY. No crea cuentas ni altera contraseñas o contadores de intentos de eDelphyn. El formulario aplica una espera local tras fallos; no sustituye los controles del servidor.
 
@@ -83,10 +83,26 @@ El subtítulo es «Visualización y eliminación de pruebas de hemograma del eDe
 
 Las pruebas de restauración y autenticación escriben exclusivamente en tablas temporales. Los XML de prueba y las capturas locales no se publican. Los nuevos respaldos de eliminación incluyen la identidad eDelphyn autenticada.
 
-## Cierre de popups · 1.5.2
+## Cierre de popups · 1.6.0
 
 Acerca de y Configuración usan la ventana principal como propietaria modal. La capa oscura no toma el foco y se oculta al cerrar, sin deshabilitar y habilitar de nuevo todos los controles. La prueba verify-popup-stress.ps1 abre/cierra ambos popups repetidamente con 1000 filas, comprueba la limpieza, la habilitación nativa y que el bucle de mensajes siga respondiendo.
 
-## Navegación y distribución visual · 1.5.2
+## Navegación y distribución visual · 1.6.0
 
 El login comienza en Usuario. Enter en Usuario pasa a Contraseña; Enter en Contraseña ejecuta Acceder. Campos vacíos se validan localmente, conservando el foco en el campo faltante, sin consultas SQL ni penalización de intentos. Los iconos del encabezado se centran por los límites reales del dibujo. El contador de selección aparece encima de Eliminar y Ver respaldos.
+
+## Pruebas configurables (1.6.0)
+
+Edite `eDelphyn.Hemograma.exe.config` en la carpeta instalada y reinicie el programa. En `appSettings`, la clave `Hemograma.Pruebas` contiene la lista en orden:
+
+```xml
+<add key="Hemograma.Pruebas" value="72|Rcto. PQ|true;73|Rcto. Leu|true;74|Neutrófilos|true;75|Linfocitos|true;76|Monocitos|true;77|Eosinófilos|true;78|Basófilos|true;92|Hto|true;93|Hb|false" />
+```
+
+Cada elemento es `ID_TEST|Nombre visible|true/false`; `true` marca la casilla al abrir y `false` la deja desmarcada. Separe elementos con `;`. Para agregar o reemplazar una prueba use su ID real de `dbo.TEST`, no el ID de donación. Cambiar solo el nombre no cambia la prueba consultada. Máximo 32 pruebas, sin IDs repetidos; use entidades XML para caracteres como `&amp;`. Los cambios se aplican a columnas, casillas, búsqueda y eliminación. Solo se eliminan las pruebas y donaciones marcadas, previa confirmación y respaldo.
+
+La actualización agrega la clave a instalaciones antiguas sin reemplazar las personalizaciones existentes. Para restaurar un respaldo de una prueba que haya retirado de la configuración, vuelva a incluir su ID y reinicie antes de restaurar.
+
+## Credenciales SQL
+
+`connection.ini` guarda `UserProtected` y `PasswordProtected`: ambos cifrados con DPAPI del usuario de Windows y representados en Base64. Base64 por sí solo es reversible y no constituye cifrado. La aplicación migra automáticamente el campo antiguo `User` al abrir; el instalador también escribe el nuevo formato. No copie estas credenciales a otro equipo o usuario: configure la conexión con el instalador en ese destino. No se publican credenciales en el `.exe.config` ni en GitHub. El instalador privado con contraseña precargada sigue siendo exclusivamente local.

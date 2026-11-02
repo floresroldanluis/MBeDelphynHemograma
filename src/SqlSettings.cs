@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
@@ -18,15 +18,22 @@ namespace Hemograma
         }
         static string Get(Dictionary<string, string> values, string key, string fallback)
         { string value; return values.TryGetValue(key, out value) ? value : fallback; }
-        internal static string Connection(string path, string fallback)
+        static string Protect(string value)
+        { return Convert.ToBase64String(ProtectedData.Protect(Encoding.UTF8.GetBytes(value), null, DataProtectionScope.CurrentUser)); }
+        static string Unprotect(string value)
+        { return Encoding.UTF8.GetString(ProtectedData.Unprotect(Convert.FromBase64String(value), null, DataProtectionScope.CurrentUser)); }
+        internal static string Connection(string path, string fallback, bool migrate = true)
         {
             var values = Read(path); var cs = new SqlConnectionStringBuilder(fallback);
             cs.DataSource = Get(values, "Server", cs.DataSource); cs.InitialCatalog = Get(values, "Database", cs.InitialCatalog);
             if (Get(values, "Authentication", "Windows") == "Sql")
             {
-                cs.IntegratedSecurity = false; cs.UserID = Get(values, "User", "eDelphyn");
+                cs.IntegratedSecurity = false;
+                string protectedUser = Get(values, "UserProtected", "");
+                cs.UserID = String.IsNullOrEmpty(protectedUser) ? Get(values, "User", "eDelphyn") : Unprotect(protectedUser);
                 string encrypted = Get(values, "PasswordProtected", "");
-                cs.Password = String.IsNullOrEmpty(encrypted) ? "" : Encoding.UTF8.GetString(ProtectedData.Unprotect(Convert.FromBase64String(encrypted), null, DataProtectionScope.CurrentUser));
+                cs.Password = String.IsNullOrEmpty(encrypted) ? "" : Unprotect(encrypted);
+                if (migrate && (String.IsNullOrEmpty(protectedUser) || values.ContainsKey("User"))) Save(cs, path);
             }
             return cs.ConnectionString;
         }
@@ -37,7 +44,7 @@ namespace Hemograma
                 UserID = Get(values, "User", "eDelphyn"), Password = Get(values, "Password", ""), IntegratedSecurity = false, ConnectTimeout = 8, ApplicationName = "eDelphyn Hemograma" };
             if (String.IsNullOrEmpty(cs.Password) && File.Exists(target))
             {
-                var previous = new SqlConnectionStringBuilder(Connection(target, "Integrated Security=True"));
+                var previous = new SqlConnectionStringBuilder(Connection(target, "Integrated Security=True", false));
                 if (!previous.IntegratedSecurity && previous.UserID == cs.UserID) cs.Password = previous.Password;
             }
             if (String.IsNullOrWhiteSpace(cs.DataSource) || String.IsNullOrWhiteSpace(cs.InitialCatalog) || String.IsNullOrWhiteSpace(cs.UserID) || String.IsNullOrEmpty(cs.Password))
@@ -46,8 +53,7 @@ namespace Hemograma
         }
         internal static void Save(SqlConnectionStringBuilder cs, string path)
         {
-            string encrypted = Convert.ToBase64String(ProtectedData.Protect(Encoding.UTF8.GetBytes(cs.Password), null, DataProtectionScope.CurrentUser));
-            string text = "[SQL]\r\nServer=" + cs.DataSource + "\r\nDatabase=" + cs.InitialCatalog + "\r\nAuthentication=Sql\r\nUser=" + cs.UserID + "\r\nPasswordProtected=" + encrypted + "\r\n";
+            string text = "[SQL]\r\nServer=" + cs.DataSource + "\r\nDatabase=" + cs.InitialCatalog + "\r\nAuthentication=Sql\r\nCredentialProtection=DPAPI-CurrentUser-Base64\r\nUserProtected=" + Protect(cs.UserID) + "\r\nPasswordProtected=" + Protect(cs.Password) + "\r\n";
             string temporary = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
             File.WriteAllText(temporary, text, Encoding.UTF8);
             if (File.Exists(path)) File.Replace(temporary, path, null); else File.Move(temporary, path);

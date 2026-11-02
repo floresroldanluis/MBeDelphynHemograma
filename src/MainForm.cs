@@ -19,7 +19,7 @@ namespace Hemograma
         readonly DateTimePicker fromDate = DatePicker(), toDate = DatePicker();
         readonly Button search = Button("Buscar", Color.FromArgb(27, 91, 145));
         readonly Button delete = Button("Eliminar", Color.FromArgb(27, 91, 145));
-        readonly CheckBox[] testChecks = new CheckBox[9];
+        readonly CheckBox[] testChecks = new CheckBox[Repository.TestIds.Length];
         readonly CheckBox selectAll = new ThemedCheckBox { Text = "Seleccionar Todo", AutoSize = true };
         readonly CheckBox selectNone = new ThemedCheckBox { Text = "Retirar Selección Todo", AutoSize = true };
         bool syncingSelection;
@@ -142,7 +142,7 @@ namespace Hemograma
             grid.Columns.Add(new DataGridViewCheckBoxColumn { Name = "Selected", DataPropertyName = "Selected", HeaderText = "✓", FillWeight = 35, MinimumWidth = 35 });
             grid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "DAT_DONATION", HeaderText = "Fecha donación", ReadOnly = true, FillWeight = 105, DefaultCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" } });
             grid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "COD_DONATION", HeaderText = "Número donación", ReadOnly = true, FillWeight = 125 });
-            for (int i = 0; i < Repository.TestIds.Length; i++) grid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "T" + Repository.TestIds[i], HeaderText = Repository.TestNames[i], ReadOnly = true, FillWeight = 83 });
+            for (int i = 0; i < Repository.TestIds.Length; i++) grid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "T" + Repository.TestIds[i], HeaderText = Repository.TestNames[i], ReadOnly = true, MinimumWidth = 83, FillWeight = 83 });
             foreach (DataGridViewColumn column in grid.Columns) column.SortMode = DataGridViewColumnSortMode.Programmatic;
             grid.ColumnHeaderMouseClick += (s, e) =>
             {
@@ -170,12 +170,12 @@ namespace Hemograma
             testSection.RowStyles.Add(new RowStyle(SizeType.Absolute, 25));
             testSection.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
             testSection.Controls.Add(new Label { Text = "Pruebas de Hemograma a eliminar:", AutoSize = true, Margin = new Padding(0, 0, 0, 3) }, 0, 0);
-            var testPanel = new FlowLayoutPanel { Dock = DockStyle.Fill, WrapContents = true, Margin = new Padding(0) };
+            var testPanel = new FlowLayoutPanel { Dock = DockStyle.Fill, WrapContents = true, AutoScroll = true, Margin = new Padding(0) };
             testSection.Controls.Add(testPanel, 0, 1);
             for (int i = 0; i < Repository.TestIds.Length; i++)
             {
                 var check = new ThemedCheckBox { Text = Repository.TestNames[i], Tag = Repository.TestIds[i], AutoSize = true,
-                    Checked = Repository.TestIds[i] != 93, Margin = new Padding(0, 2, 16, 6) };
+                    Checked = Repository.TestDefinitions[i].Selected, Margin = new Padding(0, 2, 16, 6) };
                 testChecks[i] = check;
                 check.CheckedChanged += (s, e) => UpdateSelection();
                 testPanel.Controls.Add(check);

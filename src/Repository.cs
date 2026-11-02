@@ -37,9 +37,10 @@ namespace Hemograma
     }
     internal sealed partial class Repository
     {
-        public static readonly int[] TestIds = { 72, 73, 74, 75, 76, 77, 78, 92, 93 };
-        public static readonly string[] TestNames = { "Rcto. PQ", "Rcto. Leu", "Neutrófilos", "Linfocitos", "Monocitos", "Eosinófilos", "Basófilos", "Hto", "Hb" };
-        const string Allowed = "72,73,74,75,76,77,78,92,93";
+        internal static readonly TestDefinition[] TestDefinitions = TestSettings.Load();
+        public static readonly int[] TestIds = TestDefinitions.Select(t => t.Id).ToArray();
+        public static readonly string[] TestNames = TestDefinitions.Select(t => t.Name).ToArray();
+        static readonly string Allowed = String.Join(",", TestIds.Select(id => id.ToString(CultureInfo.InvariantCulture)));
         readonly string connectionString;
         readonly bool fixture;
         internal decimal? OperatorId;

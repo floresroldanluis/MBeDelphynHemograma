@@ -16,6 +16,9 @@ namespace Hemograma
             {
                 using (var mutex = new System.Threading.Mutex(false, "Local\\eDelphyn.Hemograma.Running"))
                     {
+                    TestSettings.Ensure(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile);
+                    ConfigurationManager.RefreshSection("appSettings");
+                    TestSettings.Load();
                     string connection = Deployment.ConnectionString();
                     using (var login = new LoginForm(connection))
                         if (login.ShowDialog() == DialogResult.OK)

@@ -22,7 +22,7 @@ namespace Hemograma
         {
             if (!data.Tables.Contains("Pruebas") || !data.Tables.Contains("Donaciones")) throw new InvalidOperationException("El archivo no es un respaldo de hemograma.");
             var tests = data.Tables["Pruebas"]; var donations = data.Tables["Donaciones"];
-            if (tests.Rows.Count == 0 || tests.Rows.Count > 9000 || donations.Rows.Count == 0 || donations.Rows.Count > 1000)
+            if (tests.Rows.Count == 0 || tests.Rows.Count > 32000 || donations.Rows.Count == 0 || donations.Rows.Count > 1000)
                 throw new InvalidOperationException("El respaldo está vacío o excede el límite permitido.");
             foreach (string column in new[] { "ID_DONATION", "ID_TEST", "DES_RESULT" })
                 if (!tests.Columns.Contains(column)) throw new InvalidOperationException("Faltan campos de pruebas en el respaldo.");
@@ -33,7 +33,7 @@ namespace Hemograma
             var keys = new HashSet<string>();
             foreach (DataRow row in tests.Rows)
                 if (!ids.Contains(Convert.ToDecimal(row["ID_DONATION"])) || !TestIds.Contains(Convert.ToInt32(row["ID_TEST"])) || !keys.Add(Key(row)))
-                    throw new InvalidOperationException("El respaldo contiene pruebas ajenas o duplicadas.");
+                    throw new InvalidOperationException("El respaldo contiene pruebas duplicadas o no configuradas. Para restaurar una prueba retirada, agregue su ID_TEST a Hemograma.Pruebas y reinicie.");
         }
         static string Key(DataRow row) { return Convert.ToDecimal(row["ID_DONATION"]) + "/" + Convert.ToInt32(row["ID_TEST"]); }
         static void CheckOrigin(SqlConnection c, DataSet data)
