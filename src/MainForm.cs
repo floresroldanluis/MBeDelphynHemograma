@@ -23,6 +23,7 @@ namespace Hemograma
         readonly CheckBox selectAll = new ThemedCheckBox { Text = "Seleccionar Todo", AutoSize = true };
         readonly CheckBox selectNone = new ThemedCheckBox { Text = "Retirar Selección Todo", AutoSize = true };
         bool syncingSelection;
+        bool switchingFilter;
         readonly Label status = new Label { AutoSize = true, ForeColor = Color.FromArgb(50, 68, 85) };
         readonly DataGridView grid = new DataGridView();
         readonly Panel filters = new Panel { Dock = DockStyle.Fill };
@@ -146,7 +147,7 @@ namespace Hemograma
             AddRange(codeGroup, fromCode, toCode); AddRange(dateGroup, fromDate, toDate);
             filters.Controls.Add(codeGroup); filters.Controls.Add(dateGroup); filters.Controls.Add(search);
             search.Location = new Point(672, 38); search.Click += async (s, e) => await SearchAsync();
-            filters.Controls.Add(new Label { Text = "Con número de donación se busca sin fechas. Para buscar por fecha, deje vacíos ambos números. Hasta incluye el día completo.", AutoSize = true, Location = new Point(0, 120), ForeColor = Color.DimGray });
+            filters.Controls.Add(new Label { Text = "Busque por número o por fecha. Al usar un filtro se limpia el otro. Hasta incluye el día completo.", AutoSize = true, Location = new Point(0, 120), ForeColor = Color.DimGray });
             var toolbar = new FlowLayoutPanel { Dock = DockStyle.Fill };
             selectAll.CheckedChanged += (s, e) => { if (!syncingSelection && !busy) { if (selectAll.Checked) SelectRows(true); else UpdateSelection(); } };
             selectNone.CheckedChanged += (s, e) => { if (!syncingSelection && !busy) { if (selectNone.Checked) SelectRows(false); else UpdateSelection(); } };
@@ -217,12 +218,12 @@ namespace Hemograma
             status.Text = "Ingrese un rango y pulse Buscar. No se ha eliminado ninguna prueba.";
             delete.Enabled = false; delete.Click += async (s, e) => await DeleteAsync();
             fromCode.TextChanged += DonationCodeChanged; toCode.TextChanged += DonationCodeChanged;
-            fromDate.ValueChanged += InvalidateSearch; toDate.ValueChanged += InvalidateSearch;
+            fromDate.ValueChanged += DonationDateChanged; toDate.ValueChanged += DonationDateChanged;
             foreach (var picker in new[] { fromDate, toDate })
             {
                 // CloseUp also handles choosing the same day already held internally
                 // by a blank picker, which does not raise ValueChanged.
-                picker.CloseUp += (s, e) => { ActivateDate((DateTimePicker)s); InvalidateSearch(s, e); };
+                picker.CloseUp += DonationDateChanged;
                 picker.KeyDown += (s, e) =>
                 {
                     var date = (DateTimePicker)s;
@@ -234,7 +235,7 @@ namespace Hemograma
                         e.Handled = true; e.SuppressKeyPress = true;
                     }
                     else if (e.KeyCode == Keys.Enter && !((DateState)date.Tag).Active)
-                    { ActivateDate(date); InvalidateSearch(s, EventArgs.Empty); e.Handled = true; e.SuppressKeyPress = true; }
+                    { DonationDateChanged(date, EventArgs.Empty); e.Handled = true; e.SuppressKeyPress = true; }
                 };
             }
             FormClosing += (s, e) => { if (busy) { e.Cancel = true; MessageBox.Show(this, "Espere a que termine la operación.", "Operación en curso"); } };
@@ -257,8 +258,17 @@ namespace Hemograma
         }
         void InvalidateSearch(object sender, EventArgs e)
         { snapshot = null; grid.DataSource = null;  UpdateSelection(); status.Text = "Filtros modificados. Pulse Buscar para actualizar los resultados."; }
+        void DonationDateChanged(object sender, EventArgs e)
+        {
+            if (switchingFilter) return;
+            switchingFilter = true;
+            try { fromCode.Clear(); toCode.Clear(); ActivateDate((DateTimePicker)sender); }
+            finally { switchingFilter = false; }
+            InvalidateSearch(sender, e);
+        }
         void DonationCodeChanged(object sender, EventArgs e)
         {
+            if (switchingFilter) return;
             ApplyNumberFilter();
             InvalidateSearch(sender, e);
         }
@@ -267,7 +277,6 @@ namespace Hemograma
             bool hasCode = !String.IsNullOrWhiteSpace(fromCode.Text) || !String.IsNullOrWhiteSpace(toCode.Text);
             foreach (var picker in new[] { fromDate, toDate })
             {
-                picker.Enabled = !hasCode;
                 if (hasCode)
                 {
                     var state = (DateState)picker.Tag;
