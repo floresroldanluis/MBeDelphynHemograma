@@ -146,7 +146,7 @@ namespace Hemograma
             AddRange(codeGroup, fromCode, toCode); AddRange(dateGroup, fromDate, toDate);
             filters.Controls.Add(codeGroup); filters.Controls.Add(dateGroup); filters.Controls.Add(search);
             search.Location = new Point(672, 38); search.Click += async (s, e) => await SearchAsync();
-            filters.Controls.Add(new Label { Text = "Busque por número, fecha o ambos. Fecha vacía: sin límite. Supr borra una fecha; Hasta incluye el día completo.", AutoSize = true, Location = new Point(0, 120), ForeColor = Color.DimGray });
+            filters.Controls.Add(new Label { Text = "Con número de donación se busca sin fechas. Para buscar por fecha, deje vacíos ambos números. Hasta incluye el día completo.", AutoSize = true, Location = new Point(0, 120), ForeColor = Color.DimGray });
             var toolbar = new FlowLayoutPanel { Dock = DockStyle.Fill };
             selectAll.CheckedChanged += (s, e) => { if (!syncingSelection && !busy) { if (selectAll.Checked) SelectRows(true); else UpdateSelection(); } };
             selectNone.CheckedChanged += (s, e) => { if (!syncingSelection && !busy) { if (selectNone.Checked) SelectRows(false); else UpdateSelection(); } };
@@ -259,17 +259,30 @@ namespace Hemograma
         { snapshot = null; grid.DataSource = null;  UpdateSelection(); status.Text = "Filtros modificados. Pulse Buscar para actualizar los resultados."; }
         void DonationCodeChanged(object sender, EventArgs e)
         {
+            ApplyNumberFilter();
+            InvalidateSearch(sender, e);
+        }
+        bool ApplyNumberFilter()
+        {
             bool hasCode = !String.IsNullOrWhiteSpace(fromCode.Text) || !String.IsNullOrWhiteSpace(toCode.Text);
             foreach (var picker in new[] { fromDate, toDate })
             {
-                var state = (DateState)picker.Tag;
-                if (!state.Explicit) { state.Active = !hasCode; CenterDate(picker); }
+                picker.Enabled = !hasCode;
+                if (hasCode)
+                {
+                    var state = (DateState)picker.Tag;
+                    state.Active = false; state.Explicit = false; CenterDate(picker); picker.Invalidate();
+                }
             }
-            InvalidateSearch(sender, e);
+            return hasCode;
         }
-        Filter CurrentFilter() { return new Filter { FromCode = fromCode.Text, ToCode = toCode.Text,
-            FromDate = ((DateState)fromDate.Tag).Active ? (DateTime?)fromDate.Value.Date : null,
-            ToDate = ((DateState)toDate.Tag).Active ? (DateTime?)toDate.Value.Date : null }; }
+        Filter CurrentFilter()
+        {
+            bool hasCode = ApplyNumberFilter();
+            return new Filter { FromCode = fromCode.Text, ToCode = toCode.Text,
+                FromDate = !hasCode && ((DateState)fromDate.Tag).Active ? (DateTime?)fromDate.Value.Date : null,
+                ToDate = !hasCode && ((DateState)toDate.Tag).Active ? (DateTime?)toDate.Value.Date : null };
+        }
         decimal[] SelectedIds()
         {
             var t = grid.DataSource as DataTable;

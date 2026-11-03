@@ -7,7 +7,7 @@ if (-not (Test-Path -LiteralPath $compiler)) { throw 'Se requiere Inno Setup 6 p
 if ($PrivateBuild) { & $compiler /DPRIVATE_BUILD (Join-Path $PSScriptRoot 'installer\setup.iss') }
 else { & $compiler (Join-Path $PSScriptRoot 'installer\setup.iss') }
 if ($LASTEXITCODE -ne 0) { throw 'Error al compilar el instalador.' }
-$setup = Join-Path $PSScriptRoot 'release\eDelphyn-Hemograma-Setup-1.6.4.exe'
+$setup = Join-Path $PSScriptRoot 'release\eDelphyn-Hemograma-Setup-1.6.5.exe'
 if ($PrivateBuild) { $setup = $setup.Replace('.exe', '-Privado.exe') }
 $thumbprint = (Get-Content (Join-Path $PSScriptRoot 'signing\thumbprint.txt') -Raw).Trim()
 $certificate = Get-Item "Cert:\CurrentUser\My\$thumbprint"

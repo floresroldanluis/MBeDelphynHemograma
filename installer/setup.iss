@@ -1,4 +1,4 @@
-﻿#define AppVersion "1.6.4"
+﻿#define AppVersion "1.6.5"
 #ifdef PRIVATE_BUILD
   #include "private-defaults.iss"
   #define SetupSuffix "-Privado"
