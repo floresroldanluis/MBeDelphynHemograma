@@ -1,4 +1,4 @@
-﻿#define AppVersion "1.6.9"
+﻿#define AppVersion "1.6.10"
 #ifdef PRIVATE_BUILD
   #include "private-defaults.iss"
   #define SetupSuffix "-Privado"
@@ -22,7 +22,7 @@ WizardStyle=modern
 SetupIconFile=..\assets\edelphyn.ico
 WizardImageFile=..\assets\wizard.bmp
 WizardSmallImageFile=..\assets\wizard-small.bmp
-UninstallDisplayIcon={app}\eDelphyn.Hemograma.exe
+UninstallDisplayIcon={app}\edelphyn-{#AppVersion}.ico
 OutputDir=..\release
 OutputBaseFilename=eDelphyn-Hemograma-Setup-{#AppVersion}{#SetupSuffix}
 Compression=lzma2
@@ -47,14 +47,14 @@ Name: "desktopicon"; Description: "Crear un acceso directo en el escritorio"; Gr
 [Files]
 Source: "..\dist\eDelphyn.Hemograma.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\dist\eDelphyn.Hemograma.exe.config"; DestDir: "{app}"; Flags: onlyifdoesntexist uninsneveruninstall
-Source: "..\assets\edelphyn.ico"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\assets\edelphyn.ico"; DestDir: "{app}"; DestName: "edelphyn-{#AppVersion}.ico"; Flags: ignoreversion
 Source: "prerequisites\NDP48-x86-x64-AllOS-ENU.exe"; Flags: dontcopy nocompression
 Source: "..\dist\ConnectionSetup.exe"; Flags: dontcopy
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\eDelphyn Hemograma"; Filename: "{app}\eDelphyn.Hemograma.exe"; WorkingDir: "{app}"; IconFilename: "{app}\edelphyn.ico"
-Name: "{autodesktop}\eDelphyn Hemograma"; Filename: "{app}\eDelphyn.Hemograma.exe"; WorkingDir: "{app}"; IconFilename: "{app}\edelphyn.ico"; Tasks: desktopicon
+Name: "{group}\eDelphyn Hemograma"; Filename: "{app}\eDelphyn.Hemograma.exe"; WorkingDir: "{app}"; IconFilename: "{app}\edelphyn-{#AppVersion}.ico"
+Name: "{autodesktop}\eDelphyn Hemograma"; Filename: "{app}\eDelphyn.Hemograma.exe"; WorkingDir: "{app}"; IconFilename: "{app}\edelphyn-{#AppVersion}.ico"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\eDelphyn.Hemograma.exe"; Description: "Abrir eDelphyn Hemograma"; Flags: nowait postinstall skipifsilent
