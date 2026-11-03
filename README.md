@@ -2,7 +2,7 @@
 
 Aplicación de escritorio Windows Forms en C# / .NET Framework 4.8. Ejecutable: `dist/eDelphyn.Hemograma.exe`.
 
-## Instalación y actualización · versión 1.6.8
+## Instalación y actualización · versión 1.6.9
 
 Descargue el instalador desde [GitHub Releases](https://github.com/floresroldanluis/MBeDelphynHemograma/releases/latest). Incluye .NET Framework 4.8 sin necesidad de descargarlo al instalar. Si falta este componente, solicita permisos de administrador y puede requerir reiniciar Windows. La aplicación se instala para el usuario actual en Windows 10/11.
 
@@ -140,3 +140,7 @@ Tanto una instalación normal como una actualización muestran la casilla «Abri
 ## Fecha final automática · 1.6.8
 
 Al pulsar Buscar, si Fecha donación Desde tiene un valor y Hasta está vacío, Hasta se completa con la fecha actual del equipo y se muestra en pantalla. La búsqueda incluye ese día completo. No reemplaza una fecha final elegida por el usuario ni agrega fechas a una búsqueda por número.
+
+## Fondo del logo · 1.6.9
+
+Logo con fondo azul basado en la muestra proporcionada, aplicado al inicio de sesión, Acerca de, icono del ejecutable y ventanas, accesos directos e instalador. Los derivados ICO multirresolución y BMP del instalador se generan desde assets/edelphyn-logo.png mediante installer/build-brand-assets.ps1.
