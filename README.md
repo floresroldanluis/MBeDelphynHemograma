@@ -136,3 +136,7 @@ Escribir un número vacía ambas fechas. Elegir una fecha (Desde o Hasta) vacía
 ## Apertura al finalizar la instalación · 1.6.7
 
 Tanto una instalación normal como una actualización muestran la casilla «Abrir eDelphyn Hemograma» marcada por defecto en la página final. El programa solo se ejecuta al pulsar Finalizar si la casilla sigue marcada. Si se desmarca, el instalador se cierra sin abrir la aplicación. Las instalaciones silenciosas no abren el programa.
+
+## Fecha final automática · 1.6.8
+
+Al pulsar Buscar, si Fecha donación Desde tiene un valor y Hasta está vacío, Hasta se completa con la fecha actual del equipo y se muestra en pantalla. La búsqueda incluye ese día completo. No reemplaza una fecha final elegida por el usuario ni agrega fechas a una búsqueda por número.

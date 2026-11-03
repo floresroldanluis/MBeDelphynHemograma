@@ -359,12 +359,24 @@ namespace Hemograma
             grid.DataSource = display; 
             SortColumn(2, true);
         }
+        Filter PrepareSearchFilter()
+        {
+            var filter = CurrentFilter();
+            if (filter.FromDate.HasValue && !filter.ToDate.HasValue)
+            {
+                switchingFilter = true;
+                try { toDate.Value = DateTime.Today; ActivateDate(toDate); toDate.Invalidate(); }
+                finally { switchingFilter = false; }
+                filter = CurrentFilter();
+            }
+            return filter;
+        }
         async Task SearchAsync()
         {
             if (busy) return;
             try
             {
-                var filter = CurrentFilter(); filter.Validate();
+                var filter = PrepareSearchFilter(); filter.Validate();
                 snapshot = null; grid.DataSource = null; SetBusy(true, "Consultando SQL Server…");
                 Bind(await Task.Run(() => repository.Search(filter)));
             }

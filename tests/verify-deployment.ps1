@@ -4,11 +4,11 @@ $assembly = [Reflection.Assembly]::LoadFrom((Join-Path $root 'dist\eDelphyn.Hemo
 $type = $assembly.GetType('Hemograma.Deployment')
 $flags = [Reflection.BindingFlags]'Static,NonPublic'
 $method = $type.GetMethod('ValidateInstaller',$flags,$null,[type[]]@([string],[version]),$null)
-$setup = Join-Path $root 'release\eDelphyn-Hemograma-Setup-1.6.7.exe'
+$setup = Join-Path $root 'release\eDelphyn-Hemograma-Setup-1.6.8.exe'
 $version = $method.Invoke($null,[object[]]@([string]$setup,[version]'1.0.0.0'))
-if ($version -ne [version]'1.6.7.0') { throw 'Signed newer version not accepted' }
+if ($version -ne [version]'1.6.8.0') { throw 'Signed newer version not accepted' }
 $sameRejected = $false
-try { [void]$method.Invoke($null,[object[]]@([string]$setup,[version]'1.6.7.0')) } catch { $sameRejected = $_.Exception.InnerException.Message -like '*misma versi*' }
+try { [void]$method.Invoke($null,[object[]]@([string]$setup,[version]'1.6.8.0')) } catch { $sameRejected = $_.Exception.InnerException.Message -like '*misma versi*' }
 if (-not $sameRejected) { throw 'Same version not rejected correctly' }
 $wrongProductRejected = $false
 try { [void]$method.Invoke($null,[object[]]@([string](Join-Path $root 'dist\eDelphyn.Hemograma.exe'),[version]'1.0.0.0')) } catch { $wrongProductRejected = $_.Exception.InnerException.Message -like '*no es un instalador*' }

@@ -39,7 +39,22 @@ try {
     $keyEvent = [Windows.Forms.KeyEventArgs]::new([Windows.Forms.Keys]::Delete)
     [void]$onKeyDown.Invoke($fromDate,[object[]]@($keyEvent))
     if ($null -ne (Get-CurrentFilter).FromDate) { throw 'Delete must clear date filter' }
+    $prepare=$type.GetMethod('PrepareSearchFilter',$flags)
+    $fromDate.Value=[datetime]::Today.AddMonths(-1)
+    [void]$onKeyDown.Invoke($toDate,[object[]]@([Windows.Forms.KeyEventArgs]::new([Windows.Forms.Keys]::Delete)))
+    $prepared=$prepare.Invoke($form,@())
+    if($prepared.ToDate -ne [datetime]::Today -or $toDate.CustomFormat -eq ' '){throw 'From-only search must fill today visibly in Until'}
+    $prepared.Validate()
+    $toDate.Value=[datetime]::Today.AddDays(-2)
+    if($prepare.Invoke($form,@()).ToDate -ne [datetime]::Today.AddDays(-2)){throw 'An explicit Until date must be preserved'}
+    $fromCode.Text='C260730';$toCode.Text='C260740'
+    $prepared=$prepare.Invoke($form,@())
+    if($null -ne $prepared.FromDate -or $null -ne $prepared.ToDate -or $toDate.CustomFormat -ne ' '){throw 'Number search must not autofill dates'}
+    [void]$closeUp.Invoke($toDate,[object[]]@([EventArgs]::Empty))
+    if($null -ne $prepare.Invoke($form,@()).FromDate){throw 'Until-only search must not invent a From date'}
+    [void]$onKeyDown.Invoke($toDate,[object[]]@([Windows.Forms.KeyEventArgs]::new([Windows.Forms.Keys]::Delete)))
+    if($null -ne $prepare.Invoke($form,@()).ToDate){throw 'Empty date filter must remain empty'}
     if ($fromDate.ShowCheckBox -or $toDate.ShowCheckBox) { throw 'Date checkboxes must remain hidden' }
-    'PASS: date defaults; numbers clear both dates; either date clears both numbers; repeated switches, same-date calendar choice and Enter/Delete work. No database writes.'
+    'PASS: date defaults; numbers clear both dates; either date clears both numbers; repeated switches, same-date calendar choice and Enter/Delete work. From-only search fills today; explicit Until preserved; number-only and empty filters unaffected. No database writes.'
 } finally { $form.Dispose() }
 
