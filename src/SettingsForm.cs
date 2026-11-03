@@ -130,7 +130,7 @@ namespace Hemograma
         async Task InstallAsync()
         {
             if (working || release == null) return;
-            if (MessageBox.Show(this, "Se descargará la versión " + release.Version.ToString(3) + ". Tras verificarla, se cerrará el programa y se abrirá el instalador. Al finalizar la instalación se reiniciará la aplicación. ¿Continuar?", "Instalar actualización", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) != DialogResult.Yes) return;
+            if (MessageBox.Show(this, "Se descargará la versión " + release.Version.ToString(3) + ". Tras verificarla, se cerrará el programa y se abrirá el instalador. En la pantalla final, deje marcada la opción Abrir eDelphyn Hemograma y pulse Finalizar para volver a abrir la aplicación. ¿Continuar?", "Instalar actualización", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) != DialogResult.Yes) return;
             SetWorking(true); progress.Visible = true; progress.Value = 0; state.Text = "Descargando y verificando el instalador…";
             try
             {

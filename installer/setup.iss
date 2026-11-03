@@ -1,4 +1,4 @@
-﻿#define AppVersion "1.6.6"
+﻿#define AppVersion "1.6.7"
 #ifdef PRIVATE_BUILD
   #include "private-defaults.iss"
   #define SetupSuffix "-Privado"
@@ -32,6 +32,7 @@ AppMutex=Local\eDelphyn.Hemograma.Running
 CloseApplications=no
 RestartApplications=no
 DisableWelcomePage=no
+DisableFinishedPage=no
 UsePreviousAppDir=yes
 UsePreviousTasks=yes
 UninstallDisplayName=eDelphyn Hemograma
@@ -56,19 +57,13 @@ Name: "{group}\eDelphyn Hemograma"; Filename: "{app}\eDelphyn.Hemograma.exe"; Wo
 Name: "{autodesktop}\eDelphyn Hemograma"; Filename: "{app}\eDelphyn.Hemograma.exe"; WorkingDir: "{app}"; IconFilename: "{app}\edelphyn.ico"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\eDelphyn.Hemograma.exe"; Description: "Abrir eDelphyn Hemograma"; Flags: nowait postinstall skipifsilent; Check: not IsAppUpdate
-Filename: "{app}\eDelphyn.Hemograma.exe"; Flags: nowait; Check: IsAppUpdate
+Filename: "{app}\eDelphyn.Hemograma.exe"; Description: "Abrir eDelphyn Hemograma"; Flags: nowait postinstall skipifsilent
 
 [Code]
 var
   ConnectionPage: TInputQueryWizardPage;
   TestButton: TNewButton;
   HelperReady: Boolean;
-
-function IsAppUpdate(): Boolean;
-begin
-  Result := ExpandConstant('{param:APPUPDATE|0}') = '1';
-end;
 
 function HasNet48(): Boolean;
 var ReleaseValue: Cardinal;

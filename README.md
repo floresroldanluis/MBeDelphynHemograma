@@ -10,7 +10,7 @@ El asistente solicita servidor, base, usuario y contraseña SQL, con contraseña
 
 El encabezado es **Resultados Inmunohematológicos de Donantes**. Tema claro/oscuro, fechas y checks adaptados al tema; popups modales con esquinas redondeadas. Acerca de muestra logo, versión, resumen y enlace https://diagnosticoual.com/, sin QR.
 
-**Configuración → Actualizaciones** consulta GitHub Releases y muestra la versión actual y la disponible. Si está actualizado indica «Ya tienes la versión más reciente». Para una versión nueva permite descargar, verificar e iniciar el instalador y reiniciar al terminar. Se verifica tamaño, digest cuando GitHub lo proporciona, firma, editor, producto y versión. No se envían datos de donaciones a GitHub. Cerrar el panel cancela una descarga.
+**Configuración → Actualizaciones** consulta GitHub Releases y muestra la versión actual y la disponible. Si está actualizado indica «Ya tienes la versión más reciente». Para una versión nueva permite descargar, verificar e iniciar el instalador y volver a abrir el programa al pulsar Finalizar, si conserva marcada la casilla Abrir eDelphyn Hemograma. Se verifica tamaño, digest cuando GitHub lo proporciona, firma, editor, producto y versión. No se envían datos de donaciones a GitHub. Cerrar el panel cancela una descarga.
 
 La firma actual es local, no de una autoridad pública. Otros equipos requieren que TI gestione la confianza o una firma corporativa/pública; no garantiza la aceptación por Sophos. El instalador no modifica antivirus ni instala certificados.
 
@@ -132,3 +132,7 @@ Los números tienen prioridad: escribir o pegar Desde o Hasta limpia los dos cam
 ## Filtros excluyentes en ambos sentidos · 1.6.6
 
 Escribir un número vacía ambas fechas. Elegir una fecha (Desde o Hasta) vacía ambos números, incluso al elegir el día que ya contenía internamente un calendario vacío. Los dos grupos permanecen disponibles para cambiar directamente de modo. Solo se aplica el último tipo de filtro utilizado.
+
+## Apertura al finalizar la instalación · 1.6.7
+
+Tanto una instalación normal como una actualización muestran la casilla «Abrir eDelphyn Hemograma» marcada por defecto en la página final. El programa solo se ejecuta al pulsar Finalizar si la casilla sigue marcada. Si se desmarca, el instalador se cierra sin abrir la aplicación. Las instalaciones silenciosas no abren el programa.
